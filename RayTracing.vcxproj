@@ -92,7 +92,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="raytracing\raytracing.cu" />
+    <CudaCompile Include="raytracing\main_raytracing.cu" />
     <CudaCompile Include="texture_2d.cu" />
     <CudaCompile Include="texture_3d.cu" />
     <CudaCompile Include="texture_cube.cu" />
@@ -100,12 +100,16 @@
   <ItemGroup>
     <ClCompile Include="Common\rendercheck_d3d11.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="raytracing\RayTracing.cpp" />
-    <ClCompile Include="raytracing\RayTracing.ixx" />
+    <CudaCompile Include="raytracing\RayTracing.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
+    <ClCompile Include="raytracing\RayTracing.h" />
+    <ClCompile Include="RayTracing\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\rendercheck_d3d11.h" />
     <ClInclude Include="raytracing\Scene.h" />
+    <ClInclude Include="utils\CUDAHelper.h" />
     <ClInclude Include="utils\Math.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,18 +4,21 @@
     <CudaCompile Include="texture_2d.cu" />
     <CudaCompile Include="texture_3d.cu" />
     <CudaCompile Include="texture_cube.cu" />
-    <CudaCompile Include="raytracing\raytracing.cu">
+    <CudaCompile Include="raytracing\main_raytracing.cu">
       <Filter>Raytracing\kernel</Filter>
+    </CudaCompile>
+    <CudaCompile Include="raytracing\RayTracing.cu">
+      <Filter>Raytracing</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\rendercheck_d3d11.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="raytracing\RayTracing.ixx">
+    <ClCompile Include="raytracing\RayTracing.h">
       <Filter>Raytracing</Filter>
     </ClCompile>
-    <ClCompile Include="raytracing\RayTracing.cpp">
-      <Filter>Raytracing</Filter>
+    <ClCompile Include="RayTracing\Scene.cpp">
+      <Filter>Raytracing\kernel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -25,6 +28,9 @@
     </ClInclude>
     <ClInclude Include="raytracing\Scene.h">
       <Filter>Raytracing\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\CUDAHelper.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

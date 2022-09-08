@@ -1,7 +1,8 @@
 #pragma once
 
 #include "glm/glm.hpp"
-
+#include "glm/gtx/compatibility.hpp"
+#include "glm/gtx/intersect.hpp"
 namespace Math
 {
 	using vec2 = glm::vec2;
@@ -21,9 +22,9 @@ namespace Math
 		vec3 origin = vec3(0);
 		vec3 direction = vec3(0);
 
-		Ray() = default;
-		Ray(vec3 origin, vec3 direction) : origin(origin), direction(direction) {}
+		__device__ __host__ Ray() = default;
+		__device__ __host__ Ray(vec3 origin, vec3 direction) : origin(origin), direction(direction) {}
 
-		vec3 at(float t) const { return origin + direction * t; }
+		__device__ __host__ vec3 at(float t) const { return origin + direction * t; }
 	};
 }

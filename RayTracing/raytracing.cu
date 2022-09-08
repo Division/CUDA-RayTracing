@@ -1,75 +1,52 @@
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "RayTracing.h"
 #include "Scene.h"
-#include "utils/Math.h"
+#include <curand_kernel.h>
+#include <chrono>
+#include "utils/CUDAHelper.h"
 
-using namespace Math;
-using namespace RayTracing;
+using namespace std::chrono;
 
-#define PI 3.1415926536f
-
-struct RGBA
+extern "C" 
 {
-    float r, g, b, a;
-};
-
-struct RenderData
-{
-    unsigned char* surface;
-    int width; 
-    int height;
-    size_t pitch;
-    Camera camera;
-};
-
-/*
- * Paint a 2D texture with a moving red/green hatch pattern on a
- * strobing blue background.  Note that this kernel reads to and
- * writes from the texture, hence why this texture was not mapped
- * as WriteDiscard.
- */
-__global__ void raytracing_kernel_main(RenderData render_data) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    RGBA* pixel;
-
-    // in the case where, due to quantization into grids, we have
-    // more threads than pixels, skip the threads which don't
-    // correspond to valid pixels
-    if (x >= render_data.width || y >= render_data.height) return;
-
-    // get a pointer to the pixel at (x,y)
-    pixel = (RGBA*)(render_data.surface + y * render_data.pitch) + x;
-
-    // populate it
-    const vec2 pixel_coords(x, y);
-    vec4 result_color(pixel_coords, 0, 0);
-    result_color /= vec4(render_data.width - 1.0f, render_data.height - 1.0f, 1, 1);
-    result_color.a = 1;
-
-    pixel->r = result_color.r;  // red
-    pixel->g = result_color.g;  // green
-    pixel->b = result_color.b;  // blue
-    pixel->a = result_color.a;  // alpha
+	void raytracing_process(void* surface, void* surface_last_frame, int width, int height, size_t pitch, int frame_index, RayTracing::Scene* scene);
 }
 
-extern "C" void raytracing_process(void* surface, int width, int height, size_t pitch) {
-    cudaError_t error = cudaSuccess;
 
-    dim3 Db = dim3(16, 16);  // block dimensions are fixed to be 256 threads
-    dim3 Dg = dim3((width + Db.x - 1) / Db.x, (height + Db.y - 1) / Db.y);
+namespace RayTracing
+{
 
-    Camera camera(vec3(0), (float)width / (float)height);
-    RenderData render_data{ static_cast<unsigned char*>(surface), width, height, pitch, camera };
+	__global__ void initRNG(curandState *const rngStates, const unsigned int seed) {
+	  // Determine thread ID
+	  unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	  // Initialise the RNG
+	  curand_init(seed, tid, 0, &rngStates[tid]);
+	}
 
-    raytracing_kernel_main<<<Dg, Db>>>(render_data);
+	CUDARayTracer::CUDARayTracer(SurfaceData surface)
+		: surface(surface)
+	{
+		scene = std::make_unique<Scene>();
+		scene->AddSphere(vec3(0, 0, -1), 0.5f);
+		scene->AddSphere(vec3(0, -100.5f, -1), 100);
+	}
 
-    error = cudaGetLastError();
+	CUDARayTracer::~CUDARayTracer() = default;
+	
+	void CUDARayTracer::Process()
+	{
+		if (!rng_state)
+		{
+			const auto pixel_count = surface.width * surface.height;
+			const dim3 thread_block_size(128);
+			const dim3 thread_block_count((pixel_count + thread_block_size.x - 1) / thread_block_size.x);
+			rng_state = std::make_unique<CUDAHelper::DeviceMemory>(sizeof(curandState) * thread_block_count.x * thread_block_size.x); 
+			const uint32_t ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+			initRNG<<<thread_block_count, thread_block_size>>>(static_cast<curandState*>(rng_state->memory), 0xDEADBEEFu * ms);
+		}
 
-    if (error != cudaSuccess) {
-        printf("cuda_kernel_texture_2d() failed to launch error = %d\n", error);
-    }
+		scene->Upload(static_cast<curandState*>(rng_state->memory));
+		raytracing_process(surface.surface, surface.last_frame_surface, surface.width, surface.height, surface.pitch, frame_index, scene.get());
+		CUDA_CHECK(cudaMemcpy(surface.last_frame_surface, surface.surface, surface.pitch * surface.height, cudaMemcpyDeviceToDevice));
+		frame_index++;
+	}
 }

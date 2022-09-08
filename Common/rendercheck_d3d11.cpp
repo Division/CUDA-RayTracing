@@ -37,7 +37,7 @@
 //
 // Copyright (c) NVIDIA Corporation. All rights reserved.
 ////////////////////////////////////////////////////////////////////////////////
-
+#pragma warning(disable : 5105)
 #include <helper_functions.h>
 #include <rendercheck_d3d11.h>
 

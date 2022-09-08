@@ -30,6 +30,7 @@
  * transfer data between CUDA and DX9 2D, CubeMap, and Volume Textures.
  */
 
+#pragma warning(disable : 5105)
 #pragma warning(disable : 4312)
 
 #include <windows.h>
@@ -46,7 +47,7 @@
 #include <helper_cuda.h>
 #include <helper_functions.h>  // includes cuda.h and cuda_runtime_api.h
 
-import RayTracing;
+#include "RayTracing/RayTracing.h"
 using namespace RayTracing;
 
 #define MAX_EPSILON 10
@@ -223,12 +224,12 @@ const unsigned int g_WindowHeight = 768;
 
 int g_iFrameToCompare = 10;
 
-// Data structure for 2D texture shared between DX10 and CUDA
 struct {
   ID3D11Texture2D *pTexture;
   ID3D11ShaderResourceView *pSRView;
   cudaGraphicsResource *cudaResource;
   void *cudaLinearMemory;
+  void* cudaLinearMemoryLastFrame;
   size_t pitch;
   int width;
   int height;
@@ -485,6 +486,13 @@ int main(int argc, char *argv[]) {
     cudaMemset(g_texture_2d.cudaLinearMemory, 1,
                g_texture_2d.pitch * g_texture_2d.height);
 
+    cudaMallocPitch(&g_texture_2d.cudaLinearMemoryLastFrame, &g_texture_2d.pitch,
+                    g_texture_2d.width * sizeof(float) * 4,
+                    g_texture_2d.height);
+    getLastCudaError("cudaMallocPitch (g_texture_2d last frame) failed");
+    checkCudaErrors(cudaMemset(g_texture_2d.cudaLinearMemoryLastFrame, 0,
+               g_texture_2d.pitch * g_texture_2d.height));
+
     // CUBE
     cudaGraphicsD3D11RegisterResource(&g_texture_cube.cudaResource,
                                       g_texture_cube.pTexture,
@@ -518,7 +526,14 @@ int main(int argc, char *argv[]) {
   }
 
   
-  CUDARayTracer::SurfaceData surface{ .surface = g_texture_2d.cudaLinearMemory, .width = g_texture_2d.width, .height = g_texture_2d.height, .pitch = g_texture_2d.pitch };
+  CUDARayTracer::SurfaceData surface{ 
+      .surface = g_texture_2d.cudaLinearMemory,
+      .last_frame_surface = g_texture_2d.cudaLinearMemoryLastFrame,
+      .width = g_texture_2d.width,
+      .height = g_texture_2d.height,
+      .pitch = g_texture_2d.pitch 
+  };
+
   CUDARayTracer raytracer(surface);
 
   //
