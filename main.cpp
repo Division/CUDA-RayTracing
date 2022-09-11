@@ -11,7 +11,6 @@
 #include <d3dcompiler.h>
 
 // includes, project
-#include <rendercheck_d3d11.h>
 #include <helper_cuda.h>
 #include <helper_functions.h>  // includes cuda.h and cuda_runtime_api.h
 
@@ -366,30 +365,6 @@ int main(int argc, char *argv[]) {
         DispatchMessage(&msg);
       } else {
         Render(raytracer);
-
-        if (ref_file) {
-          for (int count = 0; count < g_iFrameToCompare; count++) {
-            Render(raytracer);
-          }
-
-          const char *cur_image_path = "simpleD3D11Texture.ppm";
-
-          // Save a reference of our current test run image
-          CheckRenderD3D11::ActiveRenderTargetToPPM(g_pd3dDevice,
-                                                    cur_image_path);
-
-          // compare to offical reference image, printing PASS or FAIL.
-          g_bPassed = CheckRenderD3D11::PPMvsPPM(cur_image_path, ref_file,
-                                                 argv[0], MAX_EPSILON, 0.15f);
-
-          g_bDone = true;
-
-          Cleanup();
-
-          PostQuitMessage(0);
-        } else {
-          g_bPassed = true;
-        }
       }
     }
   };
@@ -421,7 +396,7 @@ HRESULT InitD3D(HWND hWnd) {
   sd.BufferCount = 1;
   sd.BufferDesc.Width = g_WindowWidth;
   sd.BufferDesc.Height = g_WindowHeight;
-  sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
   sd.BufferDesc.RefreshRate.Numerator = 60;
   sd.BufferDesc.RefreshRate.Denominator = 1;
   sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;

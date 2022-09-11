@@ -21,6 +21,21 @@ namespace CUDA
 
 #define CUDA_CHECK(val) CUDA::check((val), #val, __FILE__, __LINE__)
 
+#ifdef __NVCC__
+	#define CUDA_HOST __host__
+	#define CUDA_DEVICE __device__
+    #define CUDA_HOST_DEVICE __host__ __device__
+	#define CUDA_ONLY(A) A
+	#define HOST_ONLY(A)
+	#define CUDA_COMPILER
+#else
+	#define CUDA_HOST
+	#define CUDA_DEVICE
+	#define CUDA_HOST_DEVICE __host__ __device__
+	#define CUDA_ONLY(A)
+	#define HOST_ONLY(A) A
+#endif
+
 namespace CUDA
 {
 	template<typename T>

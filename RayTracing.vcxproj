@@ -98,11 +98,9 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="RayTracing\GPUScene.cu" />
     <CudaCompile Include="raytracing\main_raytracing.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Common\rendercheck_d3d11.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="utils\CUDATexture.cpp" />
     <ClCompile Include="raytracing\RayTracing.cpp">
@@ -111,18 +109,18 @@
     <ClCompile Include="raytracing\RayTracing.h" />
     <ClCompile Include="utils\FileLoader.cpp" />
     <ClCompile Include="utils\image\DDSLoader.cpp" />
-    <CudaCompile Include="RayTracing\Scene.cpp" />
+    <CudaCompile Include="RayTracing\Random.cu" />
+    <ClCompile Include="RayTracing\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common\rendercheck_d3d11.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RayTracing\Random.cuh" />
     <ClInclude Include="utils\FileLoader.h" />
     <ClInclude Include="utils\image\DDS.h" />
     <ClInclude Include="utils\image\DDSLoader.h" />
     <ClInclude Include="utils\image\DDSLoaderHelpers.h" />
     <ClInclude Include="utils\image\DXGIFormat.h" />
     <CudaCompile Include="RayTracing\GPUScene.h" />
-    <ClInclude Include="RayTracing\GPUTypes.cuh" />
     <ClInclude Include="RayTracing\Math.h" />
     <ClInclude Include="raytracing\Scene.h" />
     <ClInclude Include="utils\CUDAHelper.h" />

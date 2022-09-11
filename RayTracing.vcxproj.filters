@@ -4,18 +4,14 @@
     <CudaCompile Include="raytracing\main_raytracing.cu">
       <Filter>Raytracing\kernel</Filter>
     </CudaCompile>
-    <CudaCompile Include="RayTracing\GPUScene.cu">
-      <Filter>Raytracing\kernel</Filter>
-    </CudaCompile>
     <CudaCompile Include="RayTracing\GPUScene.h">
       <Filter>Raytracing\kernel</Filter>
     </CudaCompile>
-    <CudaCompile Include="RayTracing\Scene.cpp">
-      <Filter>Raytracing</Filter>
+    <CudaCompile Include="RayTracing\Random.cu">
+      <Filter>Raytracing\kernel</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Common\rendercheck_d3d11.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="raytracing\RayTracing.h">
       <Filter>Raytracing</Filter>
@@ -32,9 +28,11 @@
     <ClCompile Include="utils\FileLoader.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="RayTracing\Scene.cpp">
+      <Filter>Raytracing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common\rendercheck_d3d11.h" />
     <ClInclude Include="utils\CUDAHelper.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -46,9 +44,6 @@
     </ClInclude>
     <ClInclude Include="raytracing\Scene.h">
       <Filter>Raytracing</Filter>
-    </ClInclude>
-    <ClInclude Include="RayTracing\GPUTypes.cuh">
-      <Filter>Raytracing\kernel</Filter>
     </ClInclude>
     <ClInclude Include="utils\image\DDS.h">
       <Filter>Utils\image</Filter>
@@ -65,6 +60,9 @@
     </ClInclude>
     <ClInclude Include="utils\FileLoader.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTracing\Random.cuh">
+      <Filter>Raytracing\kernel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
