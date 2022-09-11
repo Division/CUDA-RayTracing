@@ -3,6 +3,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/compatibility.hpp"
 #include "glm/gtx/intersect.hpp"
+
 namespace Math
 {
 	using vec2 = glm::vec2;

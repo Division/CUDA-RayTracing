@@ -1,13 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CudaCompile Include="texture_2d.cu" />
-    <CudaCompile Include="texture_3d.cu" />
-    <CudaCompile Include="texture_cube.cu" />
     <CudaCompile Include="raytracing\main_raytracing.cu">
       <Filter>Raytracing\kernel</Filter>
     </CudaCompile>
-    <CudaCompile Include="raytracing\RayTracing.cu">
+    <CudaCompile Include="RayTracing\GPUScene.cu">
+      <Filter>Raytracing\kernel</Filter>
+    </CudaCompile>
+    <CudaCompile Include="RayTracing\GPUScene.h">
+      <Filter>Raytracing\kernel</Filter>
+    </CudaCompile>
+    <CudaCompile Include="RayTracing\Scene.cpp">
       <Filter>Raytracing</Filter>
     </CudaCompile>
   </ItemGroup>
@@ -17,19 +20,50 @@
     <ClCompile Include="raytracing\RayTracing.h">
       <Filter>Raytracing</Filter>
     </ClCompile>
-    <ClCompile Include="RayTracing\Scene.cpp">
-      <Filter>Raytracing\kernel</Filter>
+    <ClCompile Include="utils\CUDATexture.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="raytracing\RayTracing.cpp">
+      <Filter>Raytracing</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\image\DDSLoader.cpp">
+      <Filter>Utils\image</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\FileLoader.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\rendercheck_d3d11.h" />
-    <ClInclude Include="utils\Math.h">
+    <ClInclude Include="utils\CUDAHelper.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="raytracing\Scene.h">
+    <ClInclude Include="utils\CUDATexture.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTracing\Math.h">
       <Filter>Raytracing\kernel</Filter>
     </ClInclude>
-    <ClInclude Include="utils\CUDAHelper.h">
+    <ClInclude Include="raytracing\Scene.h">
+      <Filter>Raytracing</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTracing\GPUTypes.cuh">
+      <Filter>Raytracing\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\image\DDS.h">
+      <Filter>Utils\image</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\image\DDSLoaderHelpers.h">
+      <Filter>Utils\image</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\image\DXGIFormat.h">
+      <Filter>Utils\image</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="utils\image\DDSLoader.h">
+      <Filter>Utils\image</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\FileLoader.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
@@ -42,6 +76,9 @@
     </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{1810513b-f931-4c0f-9d8a-3d102137110d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\image">
+      <UniqueIdentifier>{5c12c7fb-ba11-409e-8868-9df15632a7b4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

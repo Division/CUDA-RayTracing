@@ -57,6 +57,9 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <EnableModules>true</EnableModules>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -78,6 +81,9 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <EnableModules>true</EnableModules>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,25 +98,35 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="RayTracing\GPUScene.cu" />
     <CudaCompile Include="raytracing\main_raytracing.cu" />
-    <CudaCompile Include="texture_2d.cu" />
-    <CudaCompile Include="texture_3d.cu" />
-    <CudaCompile Include="texture_cube.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\rendercheck_d3d11.cpp" />
     <ClCompile Include="main.cpp" />
-    <CudaCompile Include="raytracing\RayTracing.cu">
+    <ClCompile Include="utils\CUDATexture.cpp" />
+    <ClCompile Include="raytracing\RayTracing.cpp">
       <FileType>CppCode</FileType>
-    </CudaCompile>
+    </ClCompile>
     <ClCompile Include="raytracing\RayTracing.h" />
-    <ClCompile Include="RayTracing\Scene.cpp" />
+    <ClCompile Include="utils\FileLoader.cpp" />
+    <ClCompile Include="utils\image\DDSLoader.cpp" />
+    <CudaCompile Include="RayTracing\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\rendercheck_d3d11.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="utils\FileLoader.h" />
+    <ClInclude Include="utils\image\DDS.h" />
+    <ClInclude Include="utils\image\DDSLoader.h" />
+    <ClInclude Include="utils\image\DDSLoaderHelpers.h" />
+    <ClInclude Include="utils\image\DXGIFormat.h" />
+    <CudaCompile Include="RayTracing\GPUScene.h" />
+    <ClInclude Include="RayTracing\GPUTypes.cuh" />
+    <ClInclude Include="RayTracing\Math.h" />
     <ClInclude Include="raytracing\Scene.h" />
     <ClInclude Include="utils\CUDAHelper.h" />
-    <ClInclude Include="utils\Math.h" />
+    <ClInclude Include="utils\CUDATexture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

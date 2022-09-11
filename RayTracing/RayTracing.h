@@ -1,8 +1,8 @@
 #include <memory>
 
-namespace CUDAHelper
+namespace CUDA
 {
-	struct DeviceMemory;
+	class DeviceMemory;
 }
 
 namespace RayTracing
@@ -35,7 +35,7 @@ namespace RayTracing
 	private:
 		int frame_index = 0;
 		std::unique_ptr<Scene> scene;
-		std::unique_ptr<CUDAHelper::DeviceMemory> rng_state;
+		std::unique_ptr<CUDA::DeviceMemory> rng_state;
 		SurfaceData surface;
 	};
 

@@ -1,13 +1,7 @@
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "Scene.h"
-#include "utils/Math.h"
-#include <curand_kernel.h>
+#include "Math.h"
 
-using namespace Math;
+//using namespace Math;
 using namespace RayTracing;
 
 #define PI 3.1415926536f
@@ -24,6 +18,7 @@ struct RenderData
     int frame_index;
     Camera camera;
     GPUScene scene;
+    cudaTextureObject_t env_tex;
 };
 
 struct HitData
@@ -69,13 +64,16 @@ __device__ RGBA ray_color(const Ray& r, GPUScene& scene, RNG rng, int depth)
         //return RGBA((hit.normal + 1.0f) * 0.5f, 1.0f);
     }
 
+    float4 cubemap = texCubemapLod<float4>(scene.environment_cubemap_tex, r.direction.x, r.direction.y, r.direction.z, 0);
+    return RGBA(cubemap.x, cubemap.y, cubemap.z, 1.0f);
+
     vec3 unit_direction = glm::normalize(r.direction);
     auto t = 0.5f*(unit_direction.y + 1.0f);
     
     return glm::lerp(RGBA(1.0f, 1.0f, 1.0f, 1.0f), RGBA(0.5f, 0.7f, 1.0f, 1.0f), t);
 }
 
-__global__ void raytracing_kernel_main(RenderData render_data) {
+__global__ void raytracing_kernel_main(RenderData render_data, cudaTextureObject_t t) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -86,6 +84,7 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     // correspond to valid pixels
     if (x >= render_data.width || y >= render_data.height) return;
 
+    //float4 cubemap = texCubemapLod<float4>(t, -1.0f, 0.0f, 0.0f, 1);
     // get a pointer to the pixel at (x,y)
     RGBA* pixel = (RGBA*)(render_data.surface + y * render_data.pitch) + x;
     RGBA* pixel_last_frame = (RGBA*)(render_data.surface_last_frame + y * render_data.pitch) + x;
@@ -106,23 +105,43 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     float lerp_value = render_data.frame_index > 0 ? 1.0f / (float)(render_data.frame_index + 1) : 1.0f;
     *pixel = glm::lerp(*pixel_last_frame, result_color, lerp_value);
     pixel->a = 1.0f;
+
+    /*pixel->r += cubemap.x;
+    pixel->g += cubemap.y;
+    pixel->b += cubemap.z;*/
+    
     //*pixel = result_color;
 }
 
-extern "C" void raytracing_process(void* surface, void* surface_last_frame, int width, int height, size_t pitch, int frame_index, Scene* scene) {
+extern "C" void raytracing_process(void* surface, void* surface_last_frame, int width, int height, size_t pitch, int frame_index, Scene* scene, cudaTextureObject_t t) {
     cudaError_t error = cudaSuccess;
 
     dim3 Db = dim3(16, 16);  // block dimensions are fixed to be 256 threads
     dim3 Dg = dim3((width + Db.x - 1) / Db.x, (height + Db.y - 1) / Db.y);
 
     Camera camera(vec3(0), (float)width / (float)height);
-    RenderData render_data{ static_cast<unsigned char*>(surface), static_cast<unsigned char*>(surface_last_frame), width, height, pitch, frame_index, camera, *scene };
+    RenderData render_data{
+        static_cast<unsigned char*>(surface), static_cast<unsigned char*>(surface_last_frame), width, height, pitch, 
+        frame_index, camera, *scene, t
+    };
 
-    raytracing_kernel_main<<<Dg, Db>>>(render_data);
+    raytracing_kernel_main<<<Dg, Db>>>(render_data, t);
 
     error = cudaGetLastError();
 
     if (error != cudaSuccess) {
         printf("(raytracing_kernel_main) failed to launch error = %d\n", error);
     }
+}
+
+__global__ void initRNG(curandState *const rngStates, const unsigned int seed) {
+  // Determine thread ID
+  unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  // Initialise the RNG
+  curand_init(seed, tid, 0, &rngStates[tid]);
+}
+
+extern "C" void init_rng(uint32_t thread_block_count, uint32_t thread_block_size, curandState* const rngStates, const unsigned int seed, cudaTextureObject_t t)
+{
+	initRNG<<<dim3(thread_block_count), dim3(thread_block_size)>>>(rngStates, seed);
 }
