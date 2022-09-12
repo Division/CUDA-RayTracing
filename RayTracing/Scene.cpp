@@ -63,6 +63,11 @@ namespace RayTracing
 
 	void Scene::Update(float dt)
 	{
+		float movement_speed = 10;
+
+		if (GetAsyncKeyState(VK_SHIFT))
+			movement_speed *= 4;
+
 		if (GetAsyncKeyState('Q'))
 		{
 			camera.SetYAndle(camera.GetYAngle() + 90 * dt);
@@ -75,22 +80,22 @@ namespace RayTracing
 		}
 		if (GetAsyncKeyState('W'))
 		{
-			camera.SetPosition(camera.GetPosition() + camera.GetForward() * 2.0f * dt);
+			camera.SetPosition(camera.GetPosition() + camera.GetForward() * movement_speed * dt);
 			SetDirty();
 		}
 		if (GetAsyncKeyState('S'))
 		{
-			camera.SetPosition(camera.GetPosition() + camera.GetBackward() * 2.0f * dt);
+			camera.SetPosition(camera.GetPosition() + camera.GetBackward() * movement_speed * dt);
 			SetDirty();
 		}
 		if (GetAsyncKeyState('A'))
 		{
-			camera.SetPosition(camera.GetPosition() + camera.GetLeft() * 2.0f * dt);
+			camera.SetPosition(camera.GetPosition() + camera.GetLeft() * movement_speed * dt);
 			SetDirty();
 		}
 		if (GetAsyncKeyState('D'))
 		{
-			camera.SetPosition(camera.GetPosition() + camera.GetRight() * 2.0f * dt);
+			camera.SetPosition(camera.GetPosition() + camera.GetRight() * movement_speed * dt);
 			SetDirty();
 		}
 

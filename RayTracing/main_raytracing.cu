@@ -104,9 +104,9 @@ __device__ RGBA ray_color(const Ray& r, GPUScene& scene, RNG rng)
         }
         else
         {
-            auto rotated_direction = quat(vec3(0, 0 , 0)) * current_ray.direction;
+            auto rotated_direction = quat(vec3(0, PI, 0)) * current_ray.direction;
             float4 cubemap = texCubemapLod<float4>(scene.environment_cubemap_tex, rotated_direction.x, rotated_direction.y, rotated_direction.z, 0);
-            result_color += throughput * glm::saturate(vec3(cubemap.x, cubemap.y, cubemap.z));
+            result_color += throughput * /*glm::saturate*/glm::clamp(vec3(cubemap.x, cubemap.y, cubemap.z), vec3(0), vec3(50));
             break;
         }
     }
@@ -137,7 +137,7 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     vec4 result_color(0);
     for (int i = 0; i < sample_count; i++)
     {
-		const auto uv = (pixel_coords + vec2(rng.GetFloat01(), rng.GetFloat01())) / vec2(render_data.width - 1.0f, render_data.height - 1.0f);
+		const auto uv = (pixel_coords + vec2(rng.GetFloat01(), rng.GetFloat01())) / vec2(render_data.width, render_data.height);
         Ray ray = render_data.scene.camera.GetRay(uv);
         result_color += ray_color(ray, render_data.scene, rng);
 	}

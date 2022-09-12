@@ -64,7 +64,7 @@ namespace RayTracing
             vec3 B = vec3(-12.5f, -12.6f, 15.0f);
             vec3 C = vec3(-12.5f, 12.6f, 15.0f);
             vec3 D = vec3(-12.5f, 12.6f, 25.0f);
-			auto material = scene->AddMaterial({ vec3(0.7f, 0.1f, 0.1f), vec3(0.0f, 0.0f, 0.0f) });
+			auto material = scene->AddMaterial({ vec3(0.1f, 0.7f, 0.1f), vec3(0.0f, 0.0f, 0.0f) });
             scene->AddQuad(A, B, C, D, material);
         }
 
@@ -74,7 +74,7 @@ namespace RayTracing
             vec3 B = vec3(12.5f, -12.6f, 15.0f);
             vec3 C = vec3(12.5f, 12.6f, 15.0f);
             vec3 D = vec3(12.5f, 12.6f, 25.0f);
-			auto material = scene->AddMaterial({ vec3(0.1f, 0.7f, 0.1f), vec3(0.0f, 0.0f, 0.0f) });
+			auto material = scene->AddMaterial({ vec3(0.7f, 0.1f, 0.1f), vec3(0.0f, 0.0f, 0.0f) });
             scene->AddQuad(A, B, C, D, material);
         }
 
@@ -88,9 +88,9 @@ namespace RayTracing
             scene->AddQuad(A, B, C, D, material);
         }
 
-		scene->AddSphere(vec3(-9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.9f, 0.75f))));
-		scene->AddSphere(vec3(0.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.75f, 0.9f))));
-		scene->AddSphere(vec3(9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.75f, 0.9f, 0.9f))));
+		scene->AddSphere(vec3(-9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.9f, 0.50f))));
+		scene->AddSphere(vec3(0.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.50f, 0.9f))));
+		scene->AddSphere(vec3(9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.50f, 0.9f, 0.9f))));
 		scene->GetCamera().SetYAndle(180);
 	}
 	
