@@ -16,7 +16,6 @@ struct RenderData
     int height;
     size_t pitch;
     int frame_index;
-    Camera camera;
     GPUScene scene;
     cudaTextureObject_t env_tex;
 };
@@ -26,6 +25,9 @@ struct HitData
     vec3 position;
     vec3 normal;
     float distance;
+    
+    vec3 diffuse;
+    vec3 emissive;
 };
 
 __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
@@ -43,6 +45,30 @@ __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
             result.distance = distance;
             result.position = ray.origin + normalized_ray_direction * distance;
             result.normal = (result.position - sphere->position) / sphere->radius;
+            auto material = scene.GetMaterial(sphere->material);
+            result.diffuse = material->albedo;
+            result.emissive = material->emissive;
+
+            lowest_distance = distance;
+        }
+    }
+
+    const int triangle_count = scene.GetTriangleCount();
+    for (int i = 0; i < triangle_count; i++)
+    {
+        auto triangle = scene.GetTriangleData(i);
+        float distance;
+        vec2 bary_coord;
+        if (glm::intersectRayTriangle(ray.origin, normalized_ray_direction, triangle->va, triangle->vb, triangle->vc, bary_coord, distance))
+        {
+            if (distance >= lowest_distance) continue;
+            result.distance = distance;
+            result.position = ray.origin + normalized_ray_direction * distance;
+            result.normal = triangle->normal;
+            auto material = scene.GetMaterial(triangle->material);
+            result.diffuse = material->albedo;
+            result.emissive = material->emissive;
+
             lowest_distance = distance;
         }
     }
@@ -92,12 +118,12 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     // populate it
     const vec2 pixel_coords(x, y);
 
-    RNG rng = render_data.scene.GetRNGForPixel(render_data.camera.viewport_size.x, x, y);
+    RNG rng = render_data.scene.GetRNGForPixel(render_data.width, x, y);
     vec4 result_color(0);
     for (int i = 0; i < sample_count; i++)
     {
 		const auto uv = (pixel_coords + vec2(rng.GetFloat01(), rng.GetFloat01())) / vec2(render_data.width - 1.0f, render_data.height - 1.0f);
-        Ray ray = render_data.camera.GetRay(uv);
+        Ray ray = render_data.scene.camera.GetRay(uv);
         result_color += ray_color(ray, render_data.scene, rng, 2);
 	}
 
@@ -113,10 +139,9 @@ extern "C" void raytracing_process(void* surface, void* surface_last_frame, int 
     dim3 Db = dim3(16, 16);  // block dimensions are fixed to be 256 threads
     dim3 Dg = dim3((width + Db.x - 1) / Db.x, (height + Db.y - 1) / Db.y);
 
-    Camera camera(vec3(0), (float)width / (float)height);
     RenderData render_data{
         static_cast<unsigned char*>(surface), static_cast<unsigned char*>(surface_last_frame), width, height, pitch, 
-        frame_index, camera, *scene
+        frame_index, *scene
     };
 
     raytracing_kernel_main<<<Dg, Db>>>(render_data);

@@ -3,6 +3,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/compatibility.hpp"
 #include "glm/gtx/intersect.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "utils/CUDAHelper.h"
 
 namespace Math
 {
@@ -17,15 +19,25 @@ namespace Math
 	using uvec4 = glm::uvec4;
 	using mat3 = glm::mat3;
 	using mat4 = glm::mat4;
+	using quat = glm::quat;
 
 	struct Ray
 	{
 		vec3 origin = vec3(0);
 		vec3 direction = vec3(0);
 
-		__device__ __host__ Ray() = default;
-		__device__ __host__ Ray(vec3 origin, vec3 direction) : origin(origin), direction(direction) {}
+		CUDA_HOST_DEVICE Ray() = default;
+		CUDA_HOST_DEVICE Ray(vec3 origin, vec3 direction) : origin(origin), direction(direction) {}
 
-		__device__ __host__ vec3 at(float t) const { return origin + direction * t; }
+		CUDA_HOST_DEVICE vec3 at(float t) const { return origin + direction * t; }
 	};
+
+	CUDA_HOST_DEVICE inline mat4 ComposeMatrix(const vec3& position, const quat& rotation, const vec3& scale)
+	{
+		mat4 result = glm::identity<mat4>();
+		result = glm::translate(result, position);
+		result *= glm::mat4_cast(rotation);
+		result = glm::scale(result, scale);
+		return result;
+	}
 }

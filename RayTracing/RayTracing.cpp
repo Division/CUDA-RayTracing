@@ -17,14 +17,29 @@ namespace RayTracing
 		: surface(surface)
 	{
 		scene = std::make_unique<Scene>();
+
+		const auto red = scene->AddMaterial(Material{ vec4(1, 0, 0, 1) });
+
 		scene->AddSphere(vec3(0, 0, -1), 0.5f);
 		scene->AddSphere(vec3(0, -100.5f, -1), 100);
+
+
+		scene->AddQuad(vec3(-1, -1, -2), vec3(1, -1, -2), vec3(1, 1, -2), vec3(-1, 1, -2));
+
+		QueryPerformanceFrequency(&frequency);
+		QueryPerformanceCounter(&last_time);
 	}
 
 	CUDARayTracer::~CUDARayTracer() = default;
 	
 	void CUDARayTracer::Process()
 	{
+		LARGE_INTEGER current_time, elapsed_time;
+		QueryPerformanceCounter(&current_time);
+		elapsed_time.QuadPart = current_time.QuadPart - last_time.QuadPart;
+		last_time = current_time;
+		double dt = (double)elapsed_time.QuadPart / (double)frequency.QuadPart;
+
 		if (!rng_state)
 		{
 			const auto pixel_count = surface.width * surface.height;
@@ -33,6 +48,14 @@ namespace RayTracing
 			rng_state = std::make_unique<CUDA::DeviceMemory>(sizeof(curandState) * thread_block_count * thread_block_size); 
 			const uint32_t ms = (uint32_t)duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 			init_rng(thread_block_count, thread_block_size, static_cast<curandState*>(rng_state->GetMemory()), 0xDEADBEEFu * ms);
+		}
+
+		scene->GetCamera().SetViewportSize(vec2(surface.width, surface.height));
+		scene->Update(static_cast<float>(dt));
+
+		if (scene->GetDirty())
+		{
+			frame_index = 0;
 		}
 
 		scene->Upload(static_cast<curandState*>(rng_state->GetMemory()));

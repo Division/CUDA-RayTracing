@@ -33,6 +33,9 @@ namespace RayTracing
 		void Process();
 
 	private:
+		LARGE_INTEGER frequency;
+		LARGE_INTEGER last_time;
+
 		int frame_index = 0;
 		std::unique_ptr<Scene> scene;
 		std::unique_ptr<CUDA::DeviceMemory> rng_state;

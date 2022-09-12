@@ -120,6 +120,7 @@
     <ClInclude Include="utils\image\DDSLoader.h" />
     <ClInclude Include="utils\image\DDSLoaderHelpers.h" />
     <ClInclude Include="utils\image\DXGIFormat.h" />
+    <ClInclude Include="utils\Memory.h" />
     <CudaCompile Include="RayTracing\GPUScene.h" />
     <ClInclude Include="RayTracing\Math.h" />
     <ClInclude Include="raytracing\Scene.h" />

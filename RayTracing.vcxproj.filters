@@ -64,6 +64,9 @@
     <ClInclude Include="RayTracing\Random.cuh">
       <Filter>Raytracing\kernel</Filter>
     </ClInclude>
+    <ClInclude Include="utils\Memory.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Raytracing">
