@@ -42,7 +42,7 @@ namespace RayTracing
 
 	void Scene::AddTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, int material)
 	{
-		const vec3 normal = glm::normalize(glm::cross(a - b, c - b));
+		const vec3 normal = glm::normalize(glm::cross(c - b, a - b));
 		triangles.push_back({ a, b, c, normal, material });
 		SetDirty();
 	}

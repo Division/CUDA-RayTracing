@@ -47,7 +47,7 @@ namespace RayTracing
 		vec2 viewport_size = vec2(1);
 		float angle_x = 0;
 		float angle_y = 0;
-		float fov_y = 100;
+		float fov_y = 90;
 		mat4 transform = mat4(1);
 		mat4 projection = mat4(1);
 	};
@@ -55,7 +55,15 @@ namespace RayTracing
 
 	struct Material : public GPUMaterial
 	{
+		Material(vec3 albedo, vec3 emissive)
+		{
+			this->albedo = vec4(albedo, 1);
+			this->emissive = vec4(emissive, 1);
+		}
 
+		Material(vec3 albedo) : Material(albedo, vec3(0)) {}
+
+		Material() : Material(vec3(0)) {}
 	};
 
 	struct Scene : public GPUScene

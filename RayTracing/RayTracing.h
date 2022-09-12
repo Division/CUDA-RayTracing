@@ -31,6 +31,9 @@ namespace RayTracing
 
 		Scene& GetScene() { return *scene; }
 		void Process();
+	
+	private:
+		void SetupCornellBox();
 
 	private:
 		LARGE_INTEGER frequency;

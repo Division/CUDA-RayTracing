@@ -18,19 +18,81 @@ namespace RayTracing
 	{
 		scene = std::make_unique<Scene>();
 
-		const auto red = scene->AddMaterial(Material{ vec4(1, 0, 0, 1) });
-
-		scene->AddSphere(vec3(0, 0, -1), 0.5f);
-		scene->AddSphere(vec3(0, -100.5f, -1), 100);
-
-
-		scene->AddQuad(vec3(-1, -1, -2), vec3(1, -1, -2), vec3(1, 1, -2), vec3(-1, 1, -2));
+		SetupCornellBox();
 
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&last_time);
 	}
 
 	CUDARayTracer::~CUDARayTracer() = default;
+
+	void CUDARayTracer::SetupCornellBox()
+	{
+		// Back wall
+		{
+			vec3 A = vec3(-12.6f, -12.6f, 25.0f);
+			vec3 B = vec3(12.6f, -12.6f, 25.0f);
+			vec3 C = vec3(12.6f, 12.6f, 25.0f);
+			vec3 D = vec3(-12.6f, 12.6f, 25.0f);
+			auto material = scene->AddMaterial({ vec3(0.7f, 0.7f, 0.7f), vec3(0.0f, 0.0f, 0.0f) });
+			scene->AddQuad(A, B, C, D, material);
+		}
+
+        // floor
+        {
+            vec3 A = vec3(-12.6f, -12.45f, 25.0f);
+            vec3 B = vec3(12.6f, -12.45f, 25.0f);
+            vec3 C = vec3(12.6f, -12.45f, 15.0f);
+            vec3 D = vec3(-12.6f, -12.45f, 15.0f);
+			auto material = scene->AddMaterial({ vec3(0.7f, 0.7f, 0.7f), vec3(0.0f, 0.0f, 0.0f) });
+            scene->AddQuad(A, B, C, D, material);
+        }
+
+        // cieling
+        {
+            vec3 A = vec3(-12.6f, 12.5f, 25.0f);
+            vec3 B = vec3(12.6f, 12.5f, 25.0f);
+            vec3 C = vec3(12.6f, 12.5f, 15.0f);
+            vec3 D = vec3(-12.6f, 12.5f, 15.0f);
+			auto material = scene->AddMaterial({ vec3(0.7f, 0.7f, 0.7f), vec3(0.0f, 0.0f, 0.0f) });
+            scene->AddQuad(A, B, C, D, material);
+        }
+
+        // left wall
+        {
+            vec3 A = vec3(-12.5f, -12.6f, 25.0f);
+            vec3 B = vec3(-12.5f, -12.6f, 15.0f);
+            vec3 C = vec3(-12.5f, 12.6f, 15.0f);
+            vec3 D = vec3(-12.5f, 12.6f, 25.0f);
+			auto material = scene->AddMaterial({ vec3(0.7f, 0.1f, 0.1f), vec3(0.0f, 0.0f, 0.0f) });
+            scene->AddQuad(A, B, C, D, material);
+        }
+
+        // right wall 
+        {
+            vec3 A = vec3(12.5f, -12.6f, 25.0f);
+            vec3 B = vec3(12.5f, -12.6f, 15.0f);
+            vec3 C = vec3(12.5f, 12.6f, 15.0f);
+            vec3 D = vec3(12.5f, 12.6f, 25.0f);
+			auto material = scene->AddMaterial({ vec3(0.1f, 0.7f, 0.1f), vec3(0.0f, 0.0f, 0.0f) });
+            scene->AddQuad(A, B, C, D, material);
+        }
+
+        // light
+        {
+            vec3 A = vec3(-5.0f, 12.4f, 22.5f);
+            vec3 B = vec3(5.0f, 12.4f, 22.5f);
+            vec3 C = vec3(5.0f, 12.4f, 17.5f);
+            vec3 D = vec3(-5.0f, 12.4f, 17.5f);
+			auto material = scene->AddMaterial({ vec3(0), vec3(1.0f, 0.9f, 0.7f) * 20.0f });
+            scene->AddQuad(A, B, C, D, material);
+        }
+
+		scene->AddSphere(vec3(-9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.9f, 0.75f))));
+		scene->AddSphere(vec3(0.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.75f, 0.9f))));
+		scene->AddSphere(vec3(9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.75f, 0.9f, 0.9f))));
+		scene->GetCamera().SetYAndle(180);
+	}
 	
 	void CUDARayTracer::Process()
 	{

@@ -26,9 +26,8 @@ namespace RayTracing
 			{
 				const vec3 p(GetVec4Normal());
 				auto sq_len = glm::dot(p, p);
-				if (sq_len < 0.0f)
+				if (sq_len > 0.0001f)
 				{
-					if (sq_len < 0.0001f) return vec3(1, 0, 0);
 					return p * __frsqrt_rn(sq_len);
 				}
 			}
