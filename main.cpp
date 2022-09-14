@@ -114,8 +114,8 @@ bool g_bPassed = true;
 int *pArgc = NULL;
 char **pArgv = NULL;
 
-const unsigned int g_WindowWidth = 1024;
-const unsigned int g_WindowHeight = 768;
+unsigned int g_WindowWidth = 1024;
+unsigned int g_WindowHeight = 768;
 
 int g_iFrameToCompare = 10;
 
@@ -320,6 +320,12 @@ int main(int argc, char *argv[]) {
   ShowWindow(hWnd, SW_SHOWDEFAULT);
   UpdateWindow(hWnd);
 
+  RECT rect;
+  GetClientRect(hWnd, &rect);
+  g_WindowWidth = rect.right - rect.left;
+  g_WindowHeight = rect.bottom - rect.top;
+
+
   // Initialize Direct3D
   if (SUCCEEDED(InitD3D(hWnd)) && SUCCEEDED(InitTextures())) {
       // 2D
@@ -457,8 +463,8 @@ HRESULT InitD3D(HWND hWnd) {
 
   // Setup the viewport
   D3D11_VIEWPORT vp;
-  vp.Width = g_WindowWidth;
-  vp.Height = g_WindowHeight;
+  vp.Width = (float)g_WindowWidth;
+  vp.Height = (float)g_WindowHeight;
   vp.MinDepth = 0.0f;
   vp.MaxDepth = 1.0f;
   vp.TopLeftX = 0;

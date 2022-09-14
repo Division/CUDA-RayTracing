@@ -26,8 +26,7 @@ struct HitData
     vec3 normal;
     float distance;
     
-    vec3 albedo;
-    vec3 emissive;
+    GPUMaterial material;
 };
 
 __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
@@ -46,9 +45,7 @@ __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
             result.distance = distance;
             result.position = ray.origin + normalized_ray_direction * distance;
             result.normal = (result.position - sphere->position) / sphere->radius;
-            auto material = scene.GetMaterial(sphere->material);
-            result.albedo = material->albedo;
-            result.emissive = material->emissive;
+            result.material = *scene.GetMaterial(sphere->material);
 
             lowest_distance = distance;
         }
@@ -66,9 +63,7 @@ __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
             result.distance = distance;
             result.position = ray.origin + normalized_ray_direction * distance;
             result.normal = triangle->normal;
-            auto material = scene.GetMaterial(triangle->material);
-            result.albedo = material->albedo;
-            result.emissive = material->emissive;
+            result.material = *scene.GetMaterial(triangle->material);
             const bool backface = glm::dot(normalized_ray_direction, result.normal) >= 0.0f;
             if (backface) result.normal = -result.normal;
 
@@ -83,7 +78,7 @@ __device__ RGBA ray_color(const Ray& r, GPUScene& scene, RNG rng)
 {
     vec3 result_color(0);
     vec3 throughput(1);
-    constexpr int num_bounces = 5;
+    constexpr int num_bounces = 6;
 
     Ray current_ray = r;
     for (int i = 0; i < num_bounces; i++)
@@ -91,22 +86,37 @@ __device__ RGBA ray_color(const Ray& r, GPUScene& scene, RNG rng)
         HitData hit;
         if (GetRayHit(current_ray, scene, hit))
         {
-            result_color += throughput * hit.emissive;
-            throughput *= hit.albedo;
-            if (glm::dot(throughput, throughput) < 0.001)
-                break;
+            const float do_specular = (rng.GetFloat01() < hit.material.specular_percent) ? 1.0f : 0.0f;
 
-            vec3 target = glm::normalize(glm::normalize(hit.normal) + rng.GetRandomPointOnSphere());
-            current_ray = Ray(hit.position + hit.normal * 0.01f, target);
+            result_color += throughput * vec3(hit.material.emissive);
+			throughput *= vec3(glm::lerp(hit.material.albedo, hit.material.specular, do_specular));
 
-            //return vec4(hit.albedo, 1);
-           //return vec4((target + vec3(1)) / 2.0f, 1);
+            const vec3 diffuse_ray_dir = glm::normalize(hit.normal + rng.GetRandomPointOnSphere());
+            vec3 specular_ray_dir = glm::normalize(glm::reflect(current_ray.direction, hit.normal));
+
+            specular_ray_dir = glm::normalize(lerp(specular_ray_dir, diffuse_ray_dir, hit.material.roughness * hit.material.roughness));
+            vec3 new_ray_dir = glm::normalize(glm::lerp(diffuse_ray_dir, specular_ray_dir, vec3(do_specular)));
+
+            current_ray = Ray(hit.position + hit.normal * 0.01f, new_ray_dir);
+
+            // Russian Roulette
+			// As the throughput gets smaller, the ray is more likely to get terminated early.
+			// Survivors have their value boosted to make up for fewer samples being in the average.
+            {
+                float p = glm::max(throughput.r, glm::max(throughput.g, throughput.b));
+                if (rng.GetFloat01() > p)
+                    break;
+
+                // Add the energy we 'lose' by randomly terminating paths
+                throughput *= 1.0f / p;
+            }
         }
         else
         {
             auto rotated_direction = quat(vec3(0, PI, 0)) * current_ray.direction;
             float4 cubemap = texCubemapLod<float4>(scene.environment_cubemap_tex, rotated_direction.x, rotated_direction.y, rotated_direction.z, 0);
             result_color += throughput * /*glm::saturate*/glm::clamp(vec3(cubemap.x, cubemap.y, cubemap.z), vec3(0), vec3(50));
+
             break;
         }
     }
@@ -118,7 +128,7 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    constexpr int sample_count = 50;
+    constexpr int sample_count = 40;
 
     // in the case where, due to quantization into grids, we have
     // more threads than pixels, skip the threads which don't
@@ -134,7 +144,9 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     const vec2 pixel_coords(x, y);
 
     RNG rng = render_data.scene.GetRNGForPixel(render_data.width, x, y);
+
     vec4 result_color(0);
+
     for (int i = 0; i < sample_count; i++)
     {
 		const auto uv = (pixel_coords + vec2(rng.GetFloat01(), rng.GetFloat01())) / vec2(render_data.width, render_data.height);
@@ -145,6 +157,7 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     result_color /= (float)sample_count;
     float lerp_value = render_data.frame_index > 0 ? 1.0f / (float)(render_data.frame_index + 1) : 1.0f;
     *pixel = glm::lerp(*pixel_last_frame, result_color, lerp_value);
+
     pixel->a = 1.0f;
 }
 

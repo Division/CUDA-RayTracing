@@ -1,4 +1,4 @@
-#include "Random.cuh"
+#include "Random.h"
 
 __global__ void initRNG(curandState *const rngStates, const unsigned int seed) {
   // Determine thread ID

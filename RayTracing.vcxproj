@@ -70,6 +70,9 @@
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Include>$(ProjectDir)\Common;$(ProjectDir)\include</Include>
     </CudaCompile>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -96,6 +99,9 @@
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Include>$(ProjectDir)\Common;$(ProjectDir)\include</Include>
     </CudaCompile>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="raytracing\main_raytracing.cu" />
@@ -114,7 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RayTracing\Random.cuh" />
+    <ClInclude Include="RayTracing\Random.h" />
     <ClInclude Include="utils\FileLoader.h" />
     <ClInclude Include="utils\image\DDS.h" />
     <ClInclude Include="utils\image\DDSLoader.h" />

@@ -61,7 +61,7 @@
     <ClInclude Include="utils\FileLoader.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="RayTracing\Random.cuh">
+    <ClInclude Include="RayTracing\Random.h">
       <Filter>Raytracing\kernel</Filter>
     </ClInclude>
     <ClInclude Include="utils\Memory.h">

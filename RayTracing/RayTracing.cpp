@@ -88,10 +88,69 @@ namespace RayTracing
             scene->AddQuad(A, B, C, D, material);
         }
 
-		scene->AddSphere(vec3(-9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.9f, 0.50f))));
-		scene->AddSphere(vec3(0.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.9f, 0.50f, 0.9f))));
-		scene->AddSphere(vec3(9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(Material(vec3(0.50f, 0.9f, 0.9f))));
-		scene->GetCamera().SetYAndle(180);
+		{
+			Material m1(vec3(0.9f, 0.9f, 0.50f));
+			m1.specular_percent = 0.1f;
+			m1.specular = vec4(0.9f, 0.9f, 0.9f, 0);
+			m1.roughness = 0.2f;
+			scene->AddSphere(vec3(-9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(m1));
+
+			Material m2(vec3(0.9f, 0.5f, 0.90f));
+			m2.specular_percent = 0.3f;
+			m2.specular = vec4(0.9f, 0.9f, 0.9f, 0);
+			m2.roughness = 0.2f;
+			scene->AddSphere(vec3(0.0f, -9.5f, 20.0f), 3, scene->AddMaterial(m2));
+
+			Material m3(vec3(0.0f, 0.0f, 1.0f));
+			m3.specular_percent = 0.5f;
+			m3.specular = vec4(1.0f, 0.0f, 0.0f, 0);
+			m3.roughness = 0.4f;
+			scene->AddSphere(vec3(9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(m3));
+			scene->GetCamera().SetYAndle(180);
+		}
+
+		// shiny green balls of varying roughnesses
+		{
+			Material m1(vec3(1));
+			m1.specular_percent = 1.0f;
+			m1.roughness = 0.0f;
+			m1.specular = vec4(0.3f, 1.0f, 0.3f, 0.0f);
+			scene->AddSphere(vec3(-10.0f, 0.0f, 23.0f), 1.75f, scene->AddMaterial(m1));
+		}
+
+		{
+			Material m1(vec3(1));
+			m1.specular_percent = 1.0f;
+			m1.roughness = 0.25f;
+			m1.specular = vec4(0.3f, 1.0f, 0.3f, 0.0f);
+			scene->AddSphere(vec3(-5.0f, 0.0f, 23.0f), 1.75f, scene->AddMaterial(m1));
+		}
+
+		{
+			Material m1(vec3(1));
+			m1.specular_percent = 1.0f;
+			m1.roughness = 0.5f;
+			m1.specular = vec4(0.3f, 1.0f, 0.3f, 0.0f);
+			scene->AddSphere(vec3(0.0f, 0.0f, 23.0f), 1.75f, scene->AddMaterial(m1));
+		}
+
+		{
+			Material m1(vec3(1));
+			m1.specular_percent = 1.0f;
+			m1.roughness = 0.75f;
+			m1.specular = vec4(0.3f, 1.0f, 0.3f, 0.0f);
+			scene->AddSphere(vec3(5.0f, 0.0f, 23.0f), 1.75f, scene->AddMaterial(m1));
+		}
+
+		{
+			Material m1(vec3(1));
+			m1.specular_percent = 1.0f;
+			m1.roughness = 0.97f;
+			m1.specular = vec4(0.3f, 1.0f, 0.3f, 0.0f);
+			scene->AddSphere(vec3(10.0f, 0.0f, 23.0f), 1.75f, scene->AddMaterial(m1));
+		}
+
+
 	}
 	
 	void CUDARayTracer::Process()

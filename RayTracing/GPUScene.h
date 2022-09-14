@@ -2,9 +2,7 @@
 
 #include "utils/CUDAHelper.h"
 #include "Math.h"
-#if defined(CUDA_COMPILER)
-	#include "Random.cuh"
-#endif
+#include "Random.h"
 
 namespace RayTracing
 {
@@ -42,6 +40,9 @@ namespace RayTracing
 	{
 		vec4 albedo = vec4(1);
 		vec4 emissive = vec4(0);
+		vec4 specular = vec4(0);
+		float roughness = 0.9f;
+		float specular_percent = 0.0f; 
 	};
 
 	struct GPUScene
@@ -62,7 +63,7 @@ namespace RayTracing
 		CUDA_DEVICE const GeometrySphere* GetSphereData(int index) { return gpu_spheres + index; };
 		CUDA_DEVICE const GeometryTriangle* GetTriangleData(int index) { return gpu_triangles + index; };
 		CUDA_DEVICE const GPUMaterial* GetMaterial(int index) { return gpu_materials + index; }
-		CUDA_ONLY( CUDA_DEVICE RNG GetRNGForPixel(int screen_width, int x, int y) { return RNG(rng_state + y * screen_width + x); } )
+		CUDA_DEVICE RNG GetRNGForPixel(int screen_width, int x, int y) { return RNG(rng_state + y * screen_width + x); }
 	};
 
 }
