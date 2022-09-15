@@ -43,6 +43,14 @@ namespace RayTracing
 		scene->AddLoadedScene(*imported_scene, m);
 	}
 
+
+	void CUDARayTracer::OnResize(SurfaceData surface)
+	{
+		this->surface = surface;
+		rng_state = nullptr;
+		scene->SetDirty();
+	}
+
 	void CUDARayTracer::SetupCornellBox()
 	{
 		// Back wall

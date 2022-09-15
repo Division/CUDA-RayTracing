@@ -24,10 +24,7 @@ namespace RayTracing
 		CUDARayTracer(SurfaceData surface);
 		~CUDARayTracer();
 
-		void OnResize(SurfaceData surface)
-		{
-			this->surface = surface;
-		}
+		void OnResize(SurfaceData surface);
 
 		Scene& GetScene() { return *scene; }
 		void Process();
