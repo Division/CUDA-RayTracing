@@ -21,6 +21,10 @@ using namespace RayTracing;
 
 static auto *SDK_name = "simpleD3D11Texture";
 
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx11.h"
+
 //-----------------------------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------------------------
@@ -242,164 +246,197 @@ bool findDXDevice(char *dev_name) {
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char *argv[]) {
-  char device_name[256];
-  char *ref_file = NULL;
+int main(int argc, char* argv[]) {
+	char device_name[256];
+	char* ref_file = NULL;
 
-  pArgc = &argc;
-  pArgv = argv;
+	pArgc = &argc;
+	pArgv = argv;
 
-  printf("[%s] - Starting...\n", SDK_name);
+	printf("[%s] - Starting...\n", SDK_name);
 
-  if (!findCUDADevice())  // Search for CUDA GPU
-  {
-    printf("> CUDA Device NOT found on \"%s\".. Exiting.\n", device_name);
-    exit(EXIT_SUCCESS);
-  }
+	if (!findCUDADevice())  // Search for CUDA GPU
+	{
+		printf("> CUDA Device NOT found on \"%s\".. Exiting.\n", device_name);
+		exit(EXIT_SUCCESS);
+	}
 
-  if (!dynlinkLoadD3D11API())  // Search for D3D API (locate drivers, does not
-                               // mean device is found)
-  {
-    printf("> D3D11 API libraries NOT found on.. Exiting.\n");
-    dynlinkUnloadD3D11API();
-    exit(EXIT_SUCCESS);
-  }
+	if (!dynlinkLoadD3D11API())  // Search for D3D API (locate drivers, does not
+		// mean device is found)
+	{
+		printf("> D3D11 API libraries NOT found on.. Exiting.\n");
+		dynlinkUnloadD3D11API();
+		exit(EXIT_SUCCESS);
+	}
 
-  if (!findDXDevice(device_name))  // Search for D3D Hardware Device
-  {
-    printf("> D3D11 Graphics Device NOT found.. Exiting.\n");
-    dynlinkUnloadD3D11API();
-    exit(EXIT_SUCCESS);
-  }
+	if (!findDXDevice(device_name))  // Search for D3D Hardware Device
+	{
+		printf("> D3D11 Graphics Device NOT found.. Exiting.\n");
+		dynlinkUnloadD3D11API();
+		exit(EXIT_SUCCESS);
+	}
 
-  // command line options
-  if (argc > 1) {
-    // automatied build testing harness
-    if (checkCmdLineFlag(argc, (const char **)argv, "file"))
-      getCmdLineArgumentString(argc, (const char **)argv, "file", &ref_file);
-  }
+	// command line options
+	if (argc > 1) {
+		// automatied build testing harness
+		if (checkCmdLineFlag(argc, (const char**)argv, "file"))
+			getCmdLineArgumentString(argc, (const char**)argv, "file", &ref_file);
+	}
 
-//
-// create window
-//
-// Register the window class
+	//
+	// create window
+	//
+	// Register the window class
 #if 1
-  WNDCLASSEX wc = {sizeof(WNDCLASSEX),
-                   CS_CLASSDC,
-                   MsgProc,
-                   0L,
-                   0L,
-                   GetModuleHandle(NULL),
-                   NULL,
-                   NULL,
-                   NULL,
-                   NULL,
-                   "CUDA SDK",
-                   NULL};
-  RegisterClassEx(&wc);
+	WNDCLASSEX wc = { sizeof(WNDCLASSEX),
+					 CS_CLASSDC,
+					 MsgProc,
+					 0L,
+					 0L,
+					 GetModuleHandle(NULL),
+					 NULL,
+					 NULL,
+					 NULL,
+					 NULL,
+					 "CUDA SDK",
+					 NULL };
+	RegisterClassEx(&wc);
 
-  // Create the application's window
-  int xBorder = ::GetSystemMetrics(SM_CXSIZEFRAME);
-  int yMenu = ::GetSystemMetrics(SM_CYMENU);
-  int yBorder = ::GetSystemMetrics(SM_CYSIZEFRAME);
-  HWND hWnd = CreateWindow(
-      wc.lpszClassName, "CUDA/D3D11 Texture InterOP", WS_OVERLAPPEDWINDOW, 0, 0,
-      g_WindowWidth + 2 * xBorder, g_WindowHeight + 2 * yBorder + yMenu, NULL,
-      NULL, wc.hInstance, NULL);
+	// Create the application's window
+	int xBorder = ::GetSystemMetrics(SM_CXSIZEFRAME);
+	int yMenu = ::GetSystemMetrics(SM_CYMENU);
+	int yBorder = ::GetSystemMetrics(SM_CYSIZEFRAME);
+	HWND hWnd = CreateWindow(
+		wc.lpszClassName, "CUDA/D3D11 Texture InterOP", WS_OVERLAPPEDWINDOW, 0, 0,
+		g_WindowWidth + 2 * xBorder, g_WindowHeight + 2 * yBorder + yMenu, NULL,
+		NULL, wc.hInstance, NULL);
 #else
-  static WNDCLASSEX wc = {
-      sizeof(WNDCLASSEX),    CS_CLASSDC, MsgProc, 0L,   0L,
-      GetModuleHandle(NULL), NULL,       NULL,    NULL, NULL,
-      "CudaD3D9Tex",         NULL};
-  RegisterClassEx(&wc);
-  HWND hWnd = CreateWindow("CudaD3D9Tex", "CUDA D3D9 Texture Interop",
-                           WS_OVERLAPPEDWINDOW, 0, 0, 800, 320,
-                           GetDesktopWindow(), NULL, wc.hInstance, NULL);
+	static WNDCLASSEX wc = {
+		sizeof(WNDCLASSEX),    CS_CLASSDC, MsgProc, 0L,   0L,
+		GetModuleHandle(NULL), NULL,       NULL,    NULL, NULL,
+		"CudaD3D9Tex",         NULL };
+	RegisterClassEx(&wc);
+	HWND hWnd = CreateWindow("CudaD3D9Tex", "CUDA D3D9 Texture Interop",
+		WS_OVERLAPPEDWINDOW, 0, 0, 800, 320,
+		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 #endif
 
-  ShowWindow(hWnd, SW_SHOWDEFAULT);
-  UpdateWindow(hWnd);
+	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	UpdateWindow(hWnd);
 
-  RECT rect;
-  GetClientRect(hWnd, &rect);
-  g_WindowWidth = rect.right - rect.left;
-  g_WindowHeight = rect.bottom - rect.top;
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	g_WindowWidth = rect.right - rect.left;
+	g_WindowHeight = rect.bottom - rect.top;
 
+	// Initialize Direct3D
+	if (SUCCEEDED(InitD3D(hWnd)) && SUCCEEDED(InitTextures())) {
+		// 2D
+		// register the Direct3D resources that we'll use
+		// we'll read to and write from g_texture_2d, so don't set any special map
+		// flags for it
+		cudaGraphicsD3D11RegisterResource(&g_texture_2d.cudaResource,
+			g_texture_2d.pTexture,
+			cudaGraphicsRegisterFlagsNone);
+		getLastCudaError("cudaGraphicsD3D11RegisterResource (g_texture_2d) failed");
+		// cuda cannot write into the texture directly : the texture is seen as a
+		// cudaArray and can only be mapped as a texture
+		// Create a buffer so that cuda can write into it
+		// pixel fmt is DXGI_FORMAT_R32G32B32A32_FLOAT
+		cudaMallocPitch(&g_texture_2d.cudaLinearMemory, &g_texture_2d.pitch,
+			g_texture_2d.width * sizeof(float) * 4,
+			g_texture_2d.height);
+		getLastCudaError("cudaMallocPitch (g_texture_2d) failed");
+		cudaMemset(g_texture_2d.cudaLinearMemory, 1,
+			g_texture_2d.pitch * g_texture_2d.height);
 
-  // Initialize Direct3D
-  if (SUCCEEDED(InitD3D(hWnd)) && SUCCEEDED(InitTextures())) {
-      // 2D
-      // register the Direct3D resources that we'll use
-      // we'll read to and write from g_texture_2d, so don't set any special map
-      // flags for it
-      cudaGraphicsD3D11RegisterResource(&g_texture_2d.cudaResource,
-          g_texture_2d.pTexture,
-          cudaGraphicsRegisterFlagsNone);
-      getLastCudaError("cudaGraphicsD3D11RegisterResource (g_texture_2d) failed");
-      // cuda cannot write into the texture directly : the texture is seen as a
-      // cudaArray and can only be mapped as a texture
-      // Create a buffer so that cuda can write into it
-      // pixel fmt is DXGI_FORMAT_R32G32B32A32_FLOAT
-      cudaMallocPitch(&g_texture_2d.cudaLinearMemory, &g_texture_2d.pitch,
-          g_texture_2d.width * sizeof(float) * 4,
-          g_texture_2d.height);
-      getLastCudaError("cudaMallocPitch (g_texture_2d) failed");
-      cudaMemset(g_texture_2d.cudaLinearMemory, 1,
-          g_texture_2d.pitch * g_texture_2d.height);
+		cudaMallocPitch(&g_texture_2d.cudaLinearMemoryLastFrame, &g_texture_2d.pitch,
+			g_texture_2d.width * sizeof(float) * 4,
+			g_texture_2d.height);
+		getLastCudaError("cudaMallocPitch (g_texture_2d last frame) failed");
+		checkCudaErrors(cudaMemset(g_texture_2d.cudaLinearMemoryLastFrame, 0,
+			g_texture_2d.pitch * g_texture_2d.height));
+	}
 
-      cudaMallocPitch(&g_texture_2d.cudaLinearMemoryLastFrame, &g_texture_2d.pitch,
-          g_texture_2d.width * sizeof(float) * 4,
-          g_texture_2d.height);
-      getLastCudaError("cudaMallocPitch (g_texture_2d last frame) failed");
-      checkCudaErrors(cudaMemset(g_texture_2d.cudaLinearMemoryLastFrame, 0,
-          g_texture_2d.pitch * g_texture_2d.height));
-  }
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-  
-  CUDARayTracer::SurfaceData surface{ 
-      .surface = g_texture_2d.cudaLinearMemory,
-      .last_frame_surface = g_texture_2d.cudaLinearMemoryLastFrame,
-      .width = g_texture_2d.width,
-      .height = g_texture_2d.height,
-      .pitch = g_texture_2d.pitch 
-  };
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsClassic();
 
-  CUDARayTracer raytracer(surface);
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
+	bool show_demo_window = true;
 
-  //
-  // the main loop
-  //
-  while (false == g_bDone) {
-    Render(raytracer);
+	CUDARayTracer::SurfaceData surface{
+		.surface = g_texture_2d.cudaLinearMemory,
+		.last_frame_surface = g_texture_2d.cudaLinearMemoryLastFrame,
+		.width = g_texture_2d.width,
+		.height = g_texture_2d.height,
+		.pitch = g_texture_2d.pitch
+	};
 
-    //
-    // handle I/O
-    //
-    MSG msg;
-    ZeroMemory(&msg, sizeof(msg));
+	CUDARayTracer raytracer(surface);
 
-    while (msg.message != WM_QUIT) {
-      if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      } else {
-        Render(raytracer);
-      }
-    }
-  };
+	//
+	// the main loop
+	//
+	while (false == g_bDone) {
+		Render(raytracer);
 
-  // Release D3D Library (after message loop)
-  dynlinkUnloadD3D11API();
+		//
+		// handle I/O
+		//
+		MSG msg;
+		ZeroMemory(&msg, sizeof(msg));
 
-  // Unregister windows class
-  UnregisterClass(wc.lpszClassName, wc.hInstance);
+		while (msg.message != WM_QUIT) {
+			if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			else {
+				// Start the Dear ImGui frame
+				ImGui_ImplDX11_NewFrame();
+				ImGui_ImplWin32_NewFrame();
+				ImGui::NewFrame();
 
-  //
-  // and exit
-  //
-  printf("> %s running on %s exiting...\n", SDK_name, device_name);
+				if (show_demo_window)
+					ImGui::ShowDemoWindow(&show_demo_window);
 
-  exit(g_bPassed ? EXIT_SUCCESS : EXIT_FAILURE);
+				Render(raytracer);
+
+				// Rendering
+				ImGui::Render();
+				ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+				// Present the backbuffer contents to the display
+				g_pSwapChain->Present(0, 0);
+			}
+		}
+	};
+
+	// Cleanup
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
+	// Release D3D Library (after message loop)
+	dynlinkUnloadD3D11API();
+
+	// Unregister windows class
+	UnregisterClass(wc.lpszClassName, wc.hInstance);
+
+	//
+	// and exit
+	//
+	printf("> %s running on %s exiting...\n", SDK_name, device_name);
+
+	exit(g_bPassed ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 //-----------------------------------------------------------------------------
@@ -667,8 +704,6 @@ bool DrawScene() {
   g_pd3dDeviceContext->Unmap(g_pConstantBuffer, 0);
   g_pd3dDeviceContext->Draw(4, 0);
 
-  // Present the backbuffer contents to the display
-  g_pSwapChain->Present(0, 0);
   return true;
 }
 
@@ -737,10 +772,6 @@ void Render(CUDARayTracer& raytracer) {
   //   and to have the map/unmap calls be the boundary between using the GPU
   //   for Direct3D and Cuda
   //
-  static bool doit = true;
-
-  if (doit) {
-    doit = true;
     cudaStream_t stream = 0;
     const int nbResources = 1;
     cudaGraphicsResource *ppResources[nbResources] = {
@@ -759,41 +790,53 @@ void Render(CUDARayTracer& raytracer) {
     //
     cudaGraphicsUnmapResources(nbResources, ppResources, stream);
     getLastCudaError("cudaGraphicsUnmapResources(3) failed");
-  }
 
   //
   // draw the scene using them
   //
   DrawScene();
+
 }
+
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //-----------------------------------------------------------------------------
 // Name: MsgProc()
 // Desc: The window's message handler
 //-----------------------------------------------------------------------------
-static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
-                              LPARAM lParam) {
-  switch (msg) {
-    case WM_KEYDOWN:
-      if (wParam == VK_ESCAPE) {
-        g_bDone = true;
-        Cleanup();
-        PostQuitMessage(0);
-        return 0;
-      }
+static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
+{
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+		return true;
 
-      break;
+	switch (msg) {
+	case WM_KEYDOWN:
+		if (wParam == VK_ESCAPE) 
+        {
+			g_bDone = true;
+			Cleanup();
+			PostQuitMessage(0);
+			return 0;
+		}
 
-    case WM_DESTROY:
-      g_bDone = true;
-      Cleanup();
-      PostQuitMessage(0);
-      return 0;
+		break;
 
-    case WM_PAINT:
-      ValidateRect(hWnd, NULL);
-      return 0;
-  }
+	case WM_DESTROY:
+		g_bDone = true;
+		Cleanup();
+		PostQuitMessage(0);
+		return 0;
 
-  return DefWindowProc(hWnd, msg, wParam, lParam);
+    case WM_SYSCOMMAND:
+        if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+            return 0;
+        break;
+
+	case WM_PAINT:
+		ValidateRect(hWnd, NULL);
+		return 0;
+	}
+
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
