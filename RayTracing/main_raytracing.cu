@@ -86,6 +86,7 @@ __device__ RGBA ray_color(const Ray& r, GPUScene& scene, RNG rng)
         HitData hit;
         if (GetRayHit(current_ray, scene, hit))
         {
+            // calculate whether we are going to do a diffuse or specular reflection ray %
             const float do_specular = (rng.GetFloat01() < hit.material.specular_percent) ? 1.0f : 0.0f;
 
             result_color += throughput * vec3(hit.material.emissive);
@@ -128,7 +129,7 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    constexpr int sample_count = 40;
+    constexpr int sample_count = 10;
 
     // in the case where, due to quantization into grids, we have
     // more threads than pixels, skip the threads which don't

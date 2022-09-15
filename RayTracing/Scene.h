@@ -11,6 +11,11 @@ namespace CUDA
 	class Texture;
 }
 
+namespace Loader
+{
+	struct AssimpScene;
+}
+
 namespace RayTracing
 {
 
@@ -75,13 +80,14 @@ namespace RayTracing
 		Scene& operator=(const Scene&) = delete;
 		Scene& operator=(Scene&&) = delete;
 
-		void AddSphere(glm::vec3 position, float radius, int material = 0);
-		void AddTriangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, int material = 0);
-		void AddQuad(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d, int material = 0) { AddTriangle(a, b, c, material); AddTriangle(c, d, a, material); }
+		void AddSphere(vec3 position, float radius, int material = 0);
+		void AddTriangle(vec3 a, vec3 b, vec3 c, int material = 0);
+		void AddQuad(vec3 a, vec3 b, vec3 c, vec3 d, int material = 0) { AddTriangle(a, b, c, material); AddTriangle(c, d, a, material); }
 		uint32_t AddMaterial(Material material);
 		void Update(float dt);
 		void Upload(curandState* rng_state);
 		void* GetMemory() const;
+		void AddLoadedScene(const Loader::AssimpScene& scene, const mat4& transform = glm::identity<mat4>(), int default_material = 0);
 
 		Camera& GetCamera() { return camera; }
 

@@ -1,6 +1,7 @@
 #include "RayTracing.h"
 #include "Scene.h"
 #include "utils/CUDAHelper.h"
+#include "utils/AssimpLoader.h"
 
 using namespace std::chrono;
 
@@ -19,12 +20,28 @@ namespace RayTracing
 		scene = std::make_unique<Scene>();
 
 		SetupCornellBox();
+		SetupBlenderModel();
 
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&last_time);
 	}
 
 	CUDARayTracer::~CUDARayTracer() = default;
+
+	void CUDARayTracer::SetupBlenderModel()
+	{
+		auto imported_scene = Loader::ImportScene("data/primitives.blend");
+		if (!imported_scene)
+		{
+			std::cout << "Failed loading scene\n";
+			throw std::runtime_error("Failed loading scene");
+		}
+
+		auto m = glm::translate(mat4(1), vec3(0, 5, 25));
+		m = glm::rotate(m, -(float)M_PI / 2, vec3(1, 0, 0));
+		m = glm::scale(m, vec3(0.8f));
+		scene->AddLoadedScene(*imported_scene, m);
+	}
 
 	void CUDARayTracer::SetupCornellBox()
 	{
@@ -90,7 +107,7 @@ namespace RayTracing
 
 		{
 			Material m1(vec3(0.9f, 0.9f, 0.50f));
-			m1.specular_percent = 0.1f;
+			m1.specular_percent = 0.5f;
 			m1.specular = vec4(0.9f, 0.9f, 0.9f, 0);
 			m1.roughness = 0.2f;
 			scene->AddSphere(vec3(-9.0f, -9.5f, 20.0f), 3, scene->AddMaterial(m1));

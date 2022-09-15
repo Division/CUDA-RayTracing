@@ -34,6 +34,8 @@ namespace RayTracing
 	
 	private:
 		void SetupCornellBox();
+		void SetupBlenderModel();
+
 
 	private:
 		LARGE_INTEGER frequency;

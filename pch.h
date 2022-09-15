@@ -1,5 +1,7 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include <vector>
 #include <deque>
 #include <curand_kernel.h>
@@ -17,6 +19,7 @@
 #include <iostream>
 #include <fstream>
 #include <optional>
+#include <cmath>
 
 #pragma warning ( push )
 #pragma warning ( disable : 5105 )

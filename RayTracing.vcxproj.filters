@@ -31,6 +31,9 @@
     <ClCompile Include="RayTracing\Scene.cpp">
       <Filter>Raytracing</Filter>
     </ClCompile>
+    <ClCompile Include="utils\AssimpLoader.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\CUDAHelper.h">
@@ -67,6 +70,9 @@
     <ClInclude Include="utils\Memory.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="utils\AssimpLoader.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Raytracing">
@@ -81,5 +87,8 @@
     <Filter Include="Utils\image">
       <UniqueIdentifier>{5c12c7fb-ba11-409e-8868-9df15632a7b4}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="vcpkg.json" />
   </ItemGroup>
 </Project>

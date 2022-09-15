@@ -5,6 +5,7 @@
 #include "utils/CUDATexture.h"
 #include "Math.h"
 #include "utils/Memory.h"
+#include "utils/AssimpLoader.h"
 
 namespace RayTracing
 {
@@ -54,6 +55,34 @@ namespace RayTracing
 		AddMaterial(Material{ vec4(1) });
 	}
 
+	void Scene::AddLoadedScene(const Loader::AssimpScene& scene, const glm::mat4& transform, int default_material)
+	{
+		for (auto& mesh : scene.mesh_nodes)
+		{
+			for (uint32_t face_index = 0; face_index < mesh.mesh->mNumFaces; face_index++)
+			{
+				auto mesh_transform = transform * mesh.transform;
+				auto face = mesh.mesh->mFaces[face_index];
+				if (face.mNumIndices != 3)
+					throw std::runtime_error("mesh is not a triangle");
+
+				glm::vec3 v0 = mesh_transform * glm::vec4(
+					mesh.mesh->mVertices[face.mIndices[0]].x, mesh.mesh->mVertices[face.mIndices[0]].y, mesh.mesh->mVertices[face.mIndices[0]].z, 1
+				);
+				glm::vec3 v1 = mesh_transform * glm::vec4(
+					mesh.mesh->mVertices[face.mIndices[1]].x, mesh.mesh->mVertices[face.mIndices[1]].y, mesh.mesh->mVertices[face.mIndices[1]].z, 1
+				);
+				glm::vec3 v2 = mesh_transform * glm::vec4(
+					mesh.mesh->mVertices[face.mIndices[2]].x, mesh.mesh->mVertices[face.mIndices[2]].y, mesh.mesh->mVertices[face.mIndices[2]].z, 1
+				);
+
+				AddTriangle(v0, v1, v2, default_material);
+			}
+
+		}
+
+	}
+	
 	uint32_t Scene::AddMaterial(Material material)
 	{
 		needs_upload = true;

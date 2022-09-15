@@ -43,6 +43,7 @@ namespace RayTracing
 		vec4 specular = vec4(0);
 		float roughness = 0.9f;
 		float specular_percent = 0.0f; 
+		float IOR = 1.0f;
 	};
 
 	struct GPUScene
