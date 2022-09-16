@@ -22,6 +22,31 @@ namespace RayTracing
 		vec3 lower_left_corner = vec3(0);
 	};
 
+	struct alignas(16) GPUVertex
+	{
+		vec3 position;
+		vec3 normal;
+		vec2 uv;
+	};
+
+	struct alignas(16) GPUFace
+	{
+		uint32_t v0;
+		uint32_t v2;
+		uint32_t v1;
+		uint32_t material;
+	};
+
+	struct BVHNode
+	{
+		AABB bounds;
+		uint32_t left_child = 0;
+		uint32_t first_prim = 0;
+		uint32_t prim_count = 0;
+
+		CUDA_HOST_DEVICE bool IsLeaf() const { return prim_count > 0; }
+	};
+
 	struct alignas(16) GeometryTriangle
 	{
 		vec3 va, vb, vc;

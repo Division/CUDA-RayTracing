@@ -40,8 +40,9 @@ namespace RayTracing
 		}
 
 		auto m = glm::translate(mat4(1), vec3(0, 5, 25));
+		m = glm::rotate(m, -(float)M_PI / 9, vec3(0, 1, 0));
 		m = glm::rotate(m, -(float)M_PI / 2, vec3(1, 0, 0));
-		m = glm::scale(m, vec3(0.8f));
+		m = glm::scale(m, vec3(0.8f) * 20.0f);
 		scene->AddLoadedScene(*imported_scene, m);
 	}
 
@@ -211,9 +212,8 @@ namespace RayTracing
 		CUDA_CHECK(cudaMemcpy(surface.last_frame_surface, surface.surface, surface.pitch * surface.height, cudaMemcpyDeviceToDevice));
 		frame_index++;
 
-		DebugDraw::DrawLine(vec3(0, 1, 0), vec3(20, 20, 20));
-		DebugDraw::DrawLine2D(vec2(1), vec2(100));
-		DebugDraw::DrawAABB({ vec3(20), vec3(30) });
+		DebugDraw::DrawAABB({ vec3(9.0f, -9.5f, 20.0f) - 3.0f, vec3(9.0f, -9.5f, 20.0f) + 3.0f });
+		scene->DebugDraw();
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(vec2(0));

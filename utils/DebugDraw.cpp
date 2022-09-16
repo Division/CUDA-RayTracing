@@ -54,11 +54,6 @@ namespace DebugDraw
 		const auto viewport = ImGui::GetMainViewport();
 		auto viewport_size = glm::vec4(0, 0, viewport->Size.x, viewport->Size.y);
 			
-		auto project = [&](const glm::vec4& pos, const glm::mat4& m, glm::vec2 viewport_size)
-		{
-			return glm::project(glm::vec3(pos), view, proj, glm::vec4(0, 0, viewport_size.x, viewport_size.y));
-		};
-
 		for (auto& line : lines)
 		{
 			auto projected_a = glm::project(line.a, view, proj, viewport_size);
@@ -66,6 +61,8 @@ namespace DebugDraw
 			if (projected_a.z < 0 || projected_b.z < 0 || !std::isfinite(projected_a.z) || !std::isfinite(projected_b.z))
 				continue;
 
+			projected_a.y = viewport_size.w - projected_a.y;
+			projected_b.y = viewport_size.w - projected_b.y;
 			drawList->AddLine(glm::vec2(projected_a), glm::vec2(projected_b), line.color, line.thickness);
 		}
 		lines.clear();

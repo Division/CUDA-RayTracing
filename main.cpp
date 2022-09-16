@@ -363,7 +363,7 @@ int main(int argc, char* argv[]) {
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
-	bool show_demo_window = true;
+	bool show_demo_window = false;
 
 	raytracer = std::make_unique<CUDARayTracer>(GetSurface());
 
@@ -371,8 +371,6 @@ int main(int argc, char* argv[]) {
 	// the main loop
 	//
 	while (false == g_bDone) {
-		//Render(*raytracer);
-
 		//
 		// handle I/O
 		//

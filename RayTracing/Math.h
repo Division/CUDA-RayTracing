@@ -5,6 +5,7 @@
 #include "glm/gtx/intersect.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "utils/CUDAHelper.h"
+#include <limits>
 
 namespace Math
 {
@@ -23,8 +24,16 @@ namespace Math
 
 	struct AABB
 	{
-		vec3 min = vec3(1e20f);
-		vec3 max = vec3(-1e20f);
+		vec3 min = vec3(std::numeric_limits<float>::infinity());
+		vec3 max = vec3(-std::numeric_limits<float>::infinity());
+
+		CUDA_HOST_DEVICE void Expand(const vec3 p)
+		{
+			min = glm::min(min, p);
+			max = glm::max(max, p);
+		}
+
+		CUDA_HOST_DEVICE vec3 GetExtent() const { return max - min; }
 	};
 
 	struct Ray

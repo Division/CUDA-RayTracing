@@ -6,6 +6,7 @@
 #include "Math.h"
 #include "utils/Memory.h"
 #include "utils/AssimpLoader.h"
+#include "BVH.h"
 
 namespace RayTracing
 {
@@ -15,7 +16,7 @@ namespace RayTracing
 	{
 		aspect = viewport_size.x / viewport_size.y;
 		transform = Math::ComposeMatrix(origin, quat(vec3(glm::radians(GetXAngle()), glm::radians(GetYAngle()), 0)), vec3(1));
-		projection = glm::perspectiveRH(glm::radians(fov_y), aspect, 10.0f, 1000.0f);
+		projection = glm::perspectiveRH(glm::radians(fov_y), aspect, 1.0f, 1000.0f);
 		view = glm::inverse(transform);
 
 		auto inv_proj = glm::inverse(projection);
@@ -37,6 +38,7 @@ namespace RayTracing
 	Scene::Scene() : camera(*this)
 	{
 		environment_cubemap = Loader::LoadDDSFromFile(L"data/sunset_uncompressed.dds");
+		bvh = std::make_unique<BVH>();
 	}
 
 	Scene::~Scene() = default;
@@ -59,12 +61,39 @@ namespace RayTracing
 	{
 		for (auto& mesh : scene.mesh_nodes)
 		{
+			if (!mesh.mesh->HasTextureCoords(0))
+				throw std::runtime_error("no UV");
+
+			if (!mesh.mesh->HasNormals())
+				throw std::runtime_error("no normals");
+
+			const uint32_t index_offset = (uint32_t)vertices.size();
+			auto mesh_transform = transform * mesh.transform;
+			for (uint32_t v = 0; v < mesh.mesh->mNumVertices; v++)
+			{
+				auto& pos = mesh.mesh->mVertices[v];
+				auto& normal = mesh.mesh->mNormals[v];
+				auto& uv = mesh.mesh->mTextureCoords[0][v];
+
+				GPUVertex vertex;
+				vertex.position = mesh_transform * glm::vec4(pos.x, pos.y, pos.z, 1.0f);
+				vertex.normal = mesh_transform * glm::vec4(normal.x, normal.y, normal.z, 0.0f);
+				vertex.uv = glm::vec2(uv.x, uv.y);
+				vertices.push_back(vertex);
+			}
+
 			for (uint32_t face_index = 0; face_index < mesh.mesh->mNumFaces; face_index++)
 			{
 				auto mesh_transform = transform * mesh.transform;
 				auto face = mesh.mesh->mFaces[face_index];
 				if (face.mNumIndices != 3)
 					throw std::runtime_error("mesh is not a triangle");
+
+				GPUFace gpu_face;
+				gpu_face.v0 = face.mIndices[0] + index_offset;
+				gpu_face.v1 = face.mIndices[1] + index_offset;
+				gpu_face.v2 = face.mIndices[2] + index_offset;
+				faces.push_back(gpu_face);
 
 				glm::vec3 v0 = mesh_transform * glm::vec4(
 					mesh.mesh->mVertices[face.mIndices[0]].x, mesh.mesh->mVertices[face.mIndices[0]].y, mesh.mesh->mVertices[face.mIndices[0]].z, 1
@@ -141,6 +170,8 @@ namespace RayTracing
 		if (!needs_upload)
 			return;
 
+		bvh->Calculate(vertices, faces);
+
 		size_t total_size = 0;
 		total_size += spheres.size() * sizeof(GeometrySphere);
 
@@ -175,4 +206,9 @@ namespace RayTracing
 		return memory->GetMemory();
 	}
 
+
+	void Scene::DebugDraw()
+	{
+		bvh->DebugDraw();
+	}
 }

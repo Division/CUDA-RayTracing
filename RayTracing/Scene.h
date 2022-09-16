@@ -20,6 +20,7 @@ namespace RayTracing
 {
 
 	struct Scene;
+	class BVH;
 
 	struct Camera : public GPUCamera
 	{
@@ -98,14 +99,18 @@ namespace RayTracing
 		void SetDirty() { needs_upload = true; }
 		bool GetDirty() const { return needs_upload; }
 
+		void DebugDraw();
 	private:
 		Camera camera;
 		std::vector<GeometrySphere> spheres;
 		std::vector<GeometryTriangle> triangles;
 		std::vector<Material> materials;
+		std::vector<GPUFace> faces;
+		std::vector<GPUVertex> vertices;
 		std::unique_ptr<CUDA::DeviceMemory> memory;
 		std::unique_ptr<CUDA::DeviceMemory> materials_memory;
 		std::unique_ptr<CUDA::Texture> environment_cubemap;
+		std::unique_ptr<BVH> bvh;
 		bool needs_upload = false;
 	};
 

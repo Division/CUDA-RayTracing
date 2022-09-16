@@ -124,6 +124,7 @@
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RayTracing\BVH.cpp" />
     <ClCompile Include="utils\AssimpLoader.cpp" />
     <ClCompile Include="utils\CUDATexture.cpp" />
     <ClCompile Include="raytracing\RayTracing.cpp">
@@ -146,6 +147,7 @@
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RayTracing\BVH.h" />
     <ClInclude Include="RayTracing\Random.h" />
     <ClInclude Include="utils\AssimpLoader.h" />
     <ClInclude Include="utils\DebugDraw.h" />

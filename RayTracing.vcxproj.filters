@@ -58,6 +58,9 @@
     <ClCompile Include="utils\DebugDraw.cpp">
       <Filter>Utils\debug</Filter>
     </ClCompile>
+    <ClCompile Include="RayTracing\BVH.cpp">
+      <Filter>Raytracing\kernel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\CUDAHelper.h">
@@ -123,6 +126,9 @@
     </ClInclude>
     <ClInclude Include="utils\DebugDraw.h">
       <Filter>Utils\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTracing\BVH.h">
+      <Filter>Raytracing\kernel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
