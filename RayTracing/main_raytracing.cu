@@ -129,7 +129,11 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
+#ifndef _DEBUG
     constexpr int sample_count = 10;
+#else
+	constexpr int sample_count = 1;
+#endif
 
     // in the case where, due to quantization into grids, we have
     // more threads than pixels, skip the threads which don't

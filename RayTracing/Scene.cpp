@@ -13,10 +13,10 @@ namespace RayTracing
 
 	void Camera::Update()
 	{
-
 		aspect = viewport_size.x / viewport_size.y;
 		transform = Math::ComposeMatrix(origin, quat(vec3(glm::radians(GetXAngle()), glm::radians(GetYAngle()), 0)), vec3(1));
 		projection = glm::perspectiveRH(glm::radians(fov_y), aspect, 10.0f, 1000.0f);
+		view = glm::inverse(transform);
 
 		auto inv_proj = glm::inverse(projection);
 

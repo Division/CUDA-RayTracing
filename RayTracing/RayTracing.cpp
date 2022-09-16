@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "utils/CUDAHelper.h"
 #include "utils/AssimpLoader.h"
+#include "imgui.h"
+#include "utils/DebugDraw.h"
 
 using namespace std::chrono;
 
@@ -208,5 +210,18 @@ namespace RayTracing
 		raytracing_process(surface.surface, surface.last_frame_surface, surface.width, surface.height, surface.pitch, frame_index, scene.get());
 		CUDA_CHECK(cudaMemcpy(surface.last_frame_surface, surface.surface, surface.pitch * surface.height, cudaMemcpyDeviceToDevice));
 		frame_index++;
+
+		DebugDraw::DrawLine(vec3(0, 1, 0), vec3(20, 20, 20));
+		DebugDraw::DrawLine2D(vec2(1), vec2(100));
+		DebugDraw::DrawAABB({ vec3(20), vec3(30) });
+
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(vec2(0));
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+		ImGui::Begin("debug", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
+		DebugDraw::Flush(scene->GetCamera().GetViewMatrix(), scene->GetCamera().GetProjectionMatrix());
+		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 }

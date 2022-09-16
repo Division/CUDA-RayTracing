@@ -46,6 +46,9 @@ namespace RayTracing
 		vec3 GetUp() { return transform[1]; }
 		vec3 GetDown() { return -transform[1]; }
 
+		const mat4& GetViewMatrix() const { return view; }
+		const mat4& GetProjectionMatrix() const { return projection; }
+
 	private:
 		Scene& scene;
 
@@ -55,6 +58,7 @@ namespace RayTracing
 		float fov_y = 90;
 		mat4 transform = mat4(1);
 		mat4 projection = mat4(1);
+		mat4 view = mat4(1);
 	};
 
 

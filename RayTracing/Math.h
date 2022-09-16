@@ -21,6 +21,12 @@ namespace Math
 	using mat4 = glm::mat4;
 	using quat = glm::quat;
 
+	struct AABB
+	{
+		vec3 min = vec3(1e20f);
+		vec3 max = vec3(-1e20f);
+	};
+
 	struct Ray
 	{
 		vec3 origin = vec3(0);

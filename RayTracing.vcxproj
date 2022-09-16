@@ -130,6 +130,7 @@
       <FileType>CppCode</FileType>
     </ClCompile>
     <ClCompile Include="raytracing\RayTracing.h" />
+    <ClCompile Include="utils\DebugDraw.cpp" />
     <ClCompile Include="utils\FileLoader.cpp" />
     <ClCompile Include="utils\image\DDSLoader.cpp" />
     <CudaCompile Include="RayTracing\Random.cu" />
@@ -147,6 +148,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="RayTracing\Random.h" />
     <ClInclude Include="utils\AssimpLoader.h" />
+    <ClInclude Include="utils\DebugDraw.h" />
     <ClInclude Include="utils\FileLoader.h" />
     <ClInclude Include="utils\image\DDS.h" />
     <ClInclude Include="utils\image\DDSLoader.h" />

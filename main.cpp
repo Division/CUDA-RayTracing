@@ -371,7 +371,7 @@ int main(int argc, char* argv[]) {
 	// the main loop
 	//
 	while (false == g_bDone) {
-		Render(*raytracer);
+		//Render(*raytracer);
 
 		//
 		// handle I/O

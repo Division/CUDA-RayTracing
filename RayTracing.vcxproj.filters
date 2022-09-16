@@ -35,25 +35,28 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\backends\imgui_impl_dx11.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\backends\imgui_impl_win32.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_demo.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_draw.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_tables.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_widgets.cpp">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\DebugDraw.cpp">
+      <Filter>Utils\debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -95,28 +98,31 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\backends\imgui_impl_dx11.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\backends\imgui_impl_win32.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imconfig.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_internal.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_rectpack.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_textedit.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_truetype.h">
-      <Filter>Utils\ImGui</Filter>
+      <Filter>Utils\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\DebugDraw.h">
+      <Filter>Utils\debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -132,7 +138,10 @@
     <Filter Include="Utils\image">
       <UniqueIdentifier>{5c12c7fb-ba11-409e-8868-9df15632a7b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils\ImGui">
+    <Filter Include="Utils\debug">
+      <UniqueIdentifier>{f14a5221-70d8-4074-a89b-20d29918fc88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\imgui">
       <UniqueIdentifier>{dc50a587-bdfc-4d00-9b3d-e2dba7ff7dcc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
