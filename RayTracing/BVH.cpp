@@ -25,18 +25,21 @@ namespace RayTracing
 
 		nodes_used = 1;
 		auto& root = nodes[root_node_id];
-		root.left_child = 0;
-		root.first_prim = 0;
+		root.first_index = 0;
 		root.prim_count = (uint32_t)faces.size();
 
 		UpdateBounds(root_node_id);
 		Subdivide(root_node_id);
+
+		face_indices.resize(faces.size());
+		std::transform(triangles.begin(), triangles.end(), face_indices.begin(), [](const Triangle& t) { return t.index; });
 
 		uint32_t total_faces = 0;
 		for (uint32_t i = 0; i < nodes_used; i++)
 		{
 			total_faces += nodes[i].prim_count;
 		}
+		std::cout << "Total triangles: " << total_faces << std::endl;
 	}
 
 	void BVH::UpdateBounds(uint32_t node_index)
@@ -46,7 +49,7 @@ namespace RayTracing
 		
 		for (uint32_t i = 0; i < node.prim_count; i++)
 		{
-			auto& t = triangles.at(node.first_prim + i);
+			auto& t = triangles.at(node.first_index + i);
 			node.bounds.Expand(vertices[faces[t.index].v0].position);
 			node.bounds.Expand(vertices[faces[t.index].v1].position);
 			node.bounds.Expand(vertices[faces[t.index].v2].position);
@@ -77,7 +80,7 @@ namespace RayTracing
 		{
 			float split_pos = node.bounds.min[axis] + extent[axis] * 0.5f;
 
-			i = node.first_prim;
+			i = node.first_index;
 			int j = i + node.prim_count - 1;
 			while (i <= j)
 			{
@@ -86,7 +89,7 @@ namespace RayTracing
 				else
 					std::swap(triangles[i], triangles[j--]);
 			}
-			leftCount = i - node.first_prim;
+			leftCount = i - node.first_index;
 
 			left_empty = leftCount == 0;
 			right_empty = leftCount == node.prim_count;
@@ -106,10 +109,10 @@ namespace RayTracing
 		// create child nodes
 		int leftChildIdx = nodes_used++;
 		int rightChildIdx = nodes_used++;
-		node.left_child = leftChildIdx;
-		nodes[leftChildIdx].first_prim = node.first_prim;
+		nodes[leftChildIdx].first_index = node.first_index;
+		node.first_index = leftChildIdx;
 		nodes[leftChildIdx].prim_count = leftCount;
-		nodes[rightChildIdx].first_prim = i;
+		nodes[rightChildIdx].first_index = i;
 		nodes[rightChildIdx].prim_count = node.prim_count - leftCount;
 		node.prim_count = 0;
 
@@ -124,17 +127,19 @@ namespace RayTracing
 	{
 		uint32_t current_node = root_node_id;
 		std::function<void(uint32_t)> draw;
+		float len = 0.5f;
 
-		/*for (auto& t : triangles)
+		for (auto& t : triangles)
 		{
 			auto& v0 = vertices[faces[t.index].v0];
 			auto& v1 = vertices[faces[t.index].v1];
 			auto& v2 = vertices[faces[t.index].v2];
-			DebugDraw::DrawLine(v0.position, v1.position);
-			DebugDraw::DrawLine(v1.position, v2.position);
-			DebugDraw::DrawLine(v2.position, v0.position);
+			DebugDraw::DrawLine(v0.position, v0.position + v0.normal * len);
+			DebugDraw::DrawLine(v1.position, v1.position + v1.normal * len);
+			DebugDraw::DrawLine(v2.position, v2.position + v2.normal * len);
 		}
-*/
+
+		return;
 		draw = [&](uint32_t node_index) 
 		{
 			auto& node = nodes[node_index];
@@ -145,8 +150,8 @@ namespace RayTracing
 				return;
 			}
 
-			draw(node.left_child);
-			draw(node.left_child + 1);
+			draw(node.first_index);
+			draw(node.first_index + 1);
 		};
 
 		draw(current_node);

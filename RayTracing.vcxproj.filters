@@ -154,4 +154,7 @@
   <ItemGroup>
     <Xml Include="vcpkg.json" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
 </Project>

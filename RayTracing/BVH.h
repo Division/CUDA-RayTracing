@@ -22,12 +22,13 @@ namespace RayTracing
 			uint32_t index;
 		};
 
-		std::vector<BVHNode> nodes;
+		std::vector<GPUBVHNode> nodes;
 		std::vector<Triangle> triangles;
 		std::span<const GPUVertex> vertices;
 		std::span<const GPUFace> faces;
 		uint32_t root_node_id = 0;
 		uint32_t nodes_used = 1;
+		std::vector<uint32_t> face_indices;
 
 	private:
 		void UpdateBounds(uint32_t node);
@@ -36,5 +37,7 @@ namespace RayTracing
 	public:
 		void Calculate(std::span<const GPUVertex> vertices, std::span<const GPUFace> faces);
 		void DebugDraw();
+		std::span<const GPUBVHNode> GetGPUBVHNodes() const { return std::span<const GPUBVHNode>(nodes.data(), nodes_used); }
+		std::span<const uint32_t> GetFaceIndices() const { return face_indices; }
 	};
 }

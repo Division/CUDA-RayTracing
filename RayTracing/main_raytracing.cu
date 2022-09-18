@@ -24,15 +24,67 @@ struct HitData
 {
     vec3 position;
     vec3 normal;
-    float distance;
+    vec2 uv = vec2(0);
+    float distance = 1e30f;
     
     GPUMaterial material;
 };
 
+__device__ bool BVHRayHit(const Ray& ray, const GPUScene& scene, const GPUBVHNode* bvh, HitData& result)
+{
+    constexpr uint32_t node_stack_size = 64;
+    uint32_t stack[node_stack_size];
+    uint32_t stack_position = 0;
+    stack[stack_position++] = 0; // Adding root node
+    auto normalized_ray_direction = glm::normalize(ray.direction);
+    
+    const float original_maximum_distance = result.distance;
+
+    while (stack_position)
+    {
+        auto& node = bvh[stack[--stack_position]];
+        if (!IntersectAABB(ray, node.bounds, result.distance))
+            continue;
+
+        if (node.IsLeaf())
+        {
+            for (uint32_t i = 0; i < node.prim_count; i++)
+            {
+                auto& face = scene.gpu_faces[scene.gpu_bvh_face_indices[node.first_index + i]];
+                auto& v0 = scene.gpu_vertices[face.v0];
+                auto& v1 = scene.gpu_vertices[face.v1];
+                auto& v2 = scene.gpu_vertices[face.v2];
+
+                float distance;
+                vec2 bary_coord;
+                if (glm::intersectRayTriangle(ray.origin, normalized_ray_direction, v0.position, v1.position, v2.position, bary_coord, distance))
+                {
+                    if (distance >= result.distance || distance < 0.0f) continue;
+                    const float bary_coord_z = 1.0f - bary_coord.x - bary_coord.y;
+                    result.distance = distance;
+                    result.position = ray.origin + normalized_ray_direction * distance;
+                    result.normal = glm::normalize(v0.normal * bary_coord.x + v1.normal * bary_coord.y + v2.normal * bary_coord_z);
+                    result.material = *scene.GetMaterial(face.material);
+                    const bool backface = glm::dot(normalized_ray_direction, result.normal) >= 0.0f;
+                    if (backface) result.normal = -result.normal;
+                }
+            }
+        }
+        else
+        {
+            stack[stack_position++] = node.first_index;
+            stack[stack_position++] = node.first_index + 1;
+        }
+    }
+
+    return result.distance < original_maximum_distance;
+}
+
 __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
 {
+    constexpr float max_distance = 1e30f;
     const auto normalized_ray_direction = glm::normalize(ray.direction);
-    float lowest_distance = INFINITY;
+    result.distance = max_distance;
 
     const int sphere_count = scene.GetSphereCount();
     for (int i = 0; i < sphere_count; i++)
@@ -41,37 +93,19 @@ __device__ bool GetRayHit(const Ray& ray, GPUScene& scene, HitData& result)
         float distance;
         if (glm::intersectRaySphere(ray.origin, normalized_ray_direction, sphere->position, sphere->radius * sphere->radius, distance))
         {
-            if (distance >= lowest_distance) continue;
+            if (distance >= result.distance) continue;
             result.distance = distance;
             result.position = ray.origin + normalized_ray_direction * distance;
             result.normal = (result.position - sphere->position) / sphere->radius;
             result.material = *scene.GetMaterial(sphere->material);
-
-            lowest_distance = distance;
+            result.distance  = distance;
         }
     }
 
-    const int triangle_count = scene.GetTriangleCount();
-    for (int i = 0; i < triangle_count; i++)
-    {
-        auto triangle = scene.GetTriangleData(i);
-        float distance;
-        vec2 bary_coord;
-        if (glm::intersectRayTriangle(ray.origin, normalized_ray_direction, triangle->va, triangle->vb, triangle->vc, bary_coord, distance))
-        {
-            if (distance >= lowest_distance || distance < 0.0f) continue;
-            result.distance = distance;
-            result.position = ray.origin + normalized_ray_direction * distance;
-            result.normal = triangle->normal;
-            result.material = *scene.GetMaterial(triangle->material);
-            const bool backface = glm::dot(normalized_ray_direction, result.normal) >= 0.0f;
-            if (backface) result.normal = -result.normal;
+    if (BVHRayHit(ray, scene, scene.gpu_bvh_nodes, result))
+        result.distance = result.distance;
 
-            lowest_distance = distance;
-        }
-    }
-
-    return lowest_distance < INFINITY;
+    return result.distance < max_distance;
 }
 
 __device__ RGBA ray_color(const Ray& r, GPUScene& scene, RNG rng) 
@@ -130,7 +164,7 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
 #ifndef _DEBUG
-    constexpr int sample_count = 10;
+    constexpr int sample_count = 5;
 #else
 	constexpr int sample_count = 1;
 #endif
@@ -140,7 +174,6 @@ __global__ void raytracing_kernel_main(RenderData render_data) {
     // correspond to valid pixels
     if (x >= render_data.width || y >= render_data.height) return;
 
-    //float4 cubemap = texCubemapLod<float4>(t, -1.0f, 0.0f, 0.0f, 1);
     // get a pointer to the pixel at (x,y)
     RGBA* pixel = (RGBA*)(render_data.surface + y * render_data.pitch) + x;
     RGBA* pixel_last_frame = (RGBA*)(render_data.surface_last_frame + y * render_data.pitch) + x;

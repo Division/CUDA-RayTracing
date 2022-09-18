@@ -28,12 +28,16 @@ namespace CUDA
 	#define CUDA_ONLY(A) A
 	#define HOST_ONLY(A)
 	#define CUDA_COMPILER
+	#define CUDA_MAX(A,B) fmaxf(A, B)
+	#define CUDA_MIN(A,B) fminf(A, B)
 #else
 	#define CUDA_HOST
 	#define CUDA_DEVICE
 	#define CUDA_HOST_DEVICE __host__ __device__
 	#define CUDA_ONLY(A)
 	#define HOST_ONLY(A) A
+	#define CUDA_MAX(A,B) std::max(A, B)
+	#define CUDA_MIN(A,B) std::min(A, B)
 #endif
 
 namespace CUDA

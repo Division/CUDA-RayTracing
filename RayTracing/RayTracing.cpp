@@ -22,7 +22,7 @@ namespace RayTracing
 		scene = std::make_unique<Scene>();
 
 		SetupCornellBox();
-		SetupBlenderModel();
+		SetupStanfordBunny();
 
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&last_time);
@@ -30,20 +30,42 @@ namespace RayTracing
 
 	CUDARayTracer::~CUDARayTracer() = default;
 
-	void CUDARayTracer::SetupBlenderModel()
+	void CUDARayTracer::SetupStanfordBunny()
 	{
-		auto imported_scene = Loader::ImportScene("data/primitives.blend");
+		auto imported_scene = Loader::ImportScene("data/stanford-bunny.obj");
 		if (!imported_scene)
 		{
 			std::cout << "Failed loading scene\n";
 			throw std::runtime_error("Failed loading scene");
 		}
 
-		auto m = glm::translate(mat4(1), vec3(0, 5, 25));
-		m = glm::rotate(m, -(float)M_PI / 9, vec3(0, 1, 0));
-		m = glm::rotate(m, -(float)M_PI / 2, vec3(1, 0, 0));
-		m = glm::scale(m, vec3(0.8f) * 20.0f);
-		scene->AddLoadedScene(*imported_scene, m);
+		auto m = glm::translate(mat4(1), vec3(30, -18, 20));
+		m = glm::rotate(m, -(float)M_PI , vec3(0, 1, 0));
+		m = glm::rotate(m, (float)M_PI / 2, vec3(1, 0, 0));
+		//m = glm::scale(m, vec3(0.8f) * 20.0f);
+		m = glm::scale(m, vec3(150.0f));
+
+		Material material(vec3(1));
+		material.specular_percent = 0.5f;
+		material.roughness = 0.8f;
+		material.specular = vec4(0.3f, 1.0f, 0.3f, 0.0f);
+		scene->AddLoadedScene(*imported_scene, m, scene->AddMaterial(material));
+
+        {
+			const vec3 offset(20, 0, 0);
+			const vec3 scale(50, 1, 50);
+			vec3 A = scale * vec3(-1.0f, -12.45f, 1.0f) + offset;
+            vec3 B = scale * vec3(1.0f, -12.45f, 1.0f) + offset;
+            vec3 C = scale * vec3(1.0f, -12.45f, -1.0f) + offset;
+            vec3 D = scale * vec3(-1.0f, -12.45f, -1.0f) + offset;
+			auto material = scene->AddMaterial({ vec3(0.7f, 0.7f, 0.7f), vec3(0.0f, 0.0f, 0.0f) });
+            scene->AddQuad(A, B, C, D, material);
+        }
+
+		{
+			auto material = scene->AddMaterial({ vec3(0), vec3(0.3f, 0.9f, 0.7f) * 10.0f });
+			scene->AddSphere(vec3(30, 10, 40), 8, material);
+		}
 	}
 
 
@@ -51,7 +73,7 @@ namespace RayTracing
 	{
 		this->surface = surface;
 		rng_state = nullptr;
-		scene->SetDirty();
+		scene->AddDirtyFlag(DirtyFlagValue::Samples);
 	}
 
 	void CUDARayTracer::SetupCornellBox()
@@ -178,7 +200,6 @@ namespace RayTracing
 			scene->AddSphere(vec3(10.0f, 0.0f, 23.0f), 1.75f, scene->AddMaterial(m1));
 		}
 
-
 	}
 	
 	void CUDARayTracer::Process()
@@ -202,7 +223,7 @@ namespace RayTracing
 		scene->GetCamera().SetViewportSize(vec2(surface.width, surface.height));
 		scene->Update(static_cast<float>(dt));
 
-		if (scene->GetDirty())
+		if (scene->IsFlagDirty(DirtyFlagValue::Samples))
 		{
 			frame_index = 0;
 		}
@@ -212,8 +233,8 @@ namespace RayTracing
 		CUDA_CHECK(cudaMemcpy(surface.last_frame_surface, surface.surface, surface.pitch * surface.height, cudaMemcpyDeviceToDevice));
 		frame_index++;
 
-		DebugDraw::DrawAABB({ vec3(9.0f, -9.5f, 20.0f) - 3.0f, vec3(9.0f, -9.5f, 20.0f) + 3.0f });
-		scene->DebugDraw();
+		//DebugDraw::DrawAABB({ vec3(9.0f, -9.5f, 20.0f) - 3.0f, vec3(9.0f, -9.5f, 20.0f) + 3.0f });
+		//scene->DebugDraw();
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(vec2(0));

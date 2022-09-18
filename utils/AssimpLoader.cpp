@@ -29,11 +29,13 @@ namespace Loader
     std::unique_ptr<AssimpScene> ImportScene(const std::string& pFile) 
     {
         std::unique_ptr<AssimpScene> scene = std::make_unique<AssimpScene>();
+        scene->importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 100);
 
         scene->scene = scene->importer.ReadFile(pFile,
-            aiProcess_CalcTangentSpace |
+            //aiProcess_CalcTangentSpace |
             aiProcess_Triangulate |
             aiProcess_JoinIdenticalVertices |
+            aiProcess_GenSmoothNormals |
             aiProcess_SortByPType);
 
         if (!scene) {

@@ -24,8 +24,8 @@ namespace Math
 
 	struct AABB
 	{
-		vec3 min = vec3(std::numeric_limits<float>::infinity());
-		vec3 max = vec3(-std::numeric_limits<float>::infinity());
+		vec3 min = vec3(1e30f);
+		vec3 max = vec3(-1e30f);
 
 		CUDA_HOST_DEVICE void Expand(const vec3 p)
 		{
@@ -46,6 +46,19 @@ namespace Math
 
 		CUDA_HOST_DEVICE vec3 at(float t) const { return origin + direction * t; }
 	};
+
+	CUDA_HOST_DEVICE inline bool IntersectAABB(const Ray& ray, const AABB& aabb, const float ray_length = 1e30f)
+	{
+		auto& bmin = aabb.min;
+		auto& bmax = aabb.max;
+		float tx1 = (bmin.x - ray.origin.x) / ray.direction.x, tx2 = (bmax.x - ray.origin.x) / ray.direction.x;
+		float tmin = CUDA_MIN(tx1, tx2), tmax = CUDA_MAX(tx1, tx2);
+		float ty1 = (bmin.y - ray.origin.y) / ray.direction.y, ty2 = (bmax.y - ray.origin.y) / ray.direction.y;
+		tmin = CUDA_MAX(tmin, CUDA_MIN(ty1, ty2)), tmax = CUDA_MIN(tmax, CUDA_MAX(ty1, ty2));
+		float tz1 = (bmin.z - ray.origin.z) / ray.direction.z, tz2 = (bmax.z - ray.origin.z) / ray.direction.z;
+		tmin = CUDA_MAX(tmin, CUDA_MIN(tz1, tz2)), tmax = CUDA_MIN(tmax, CUDA_MAX(tz1, tz2));
+		return tmax >= tmin && tmin < ray_length && tmax > 0;
+	}
 
 	CUDA_HOST_DEVICE inline mat4 ComposeMatrix(const vec3& position, const quat& rotation, const vec3& scale)
 	{

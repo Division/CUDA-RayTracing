@@ -31,7 +31,7 @@ namespace RayTracing
 	
 	private:
 		void SetupCornellBox();
-		void SetupBlenderModel();
+		void SetupStanfordBunny();
 
 
 	private:

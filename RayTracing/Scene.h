@@ -18,6 +18,14 @@ namespace Loader
 
 namespace RayTracing
 {
+	enum class DirtyFlagValue : uint32_t
+	{
+		Samples = 1 << 0,
+		SceneMemory = 1 << 1,
+		BVH = 1 << 2
+	};
+
+	typedef uint32_t DirtyFlags;
 
 	struct Scene;
 	class BVH;
@@ -96,22 +104,28 @@ namespace RayTracing
 
 		Camera& GetCamera() { return camera; }
 
-		void SetDirty() { needs_upload = true; }
-		bool GetDirty() const { return needs_upload; }
+		void AddDirtyFlags(DirtyFlags flags = ~0) { dirty_flags |= flags; }
+		void AddDirtyFlag(DirtyFlagValue flag) { AddDirtyFlags(static_cast<DirtyFlags>(flag)); }
+		DirtyFlags GetDirtyFlags() const { return dirty_flags; }
+		bool IsFlagDirty(DirtyFlagValue flag) const { return dirty_flags & static_cast<DirtyFlags>(flag); }
 
 		void DebugDraw();
+
 	private:
 		Camera camera;
 		std::vector<GeometrySphere> spheres;
-		std::vector<GeometryTriangle> triangles;
 		std::vector<Material> materials;
 		std::vector<GPUFace> faces;
 		std::vector<GPUVertex> vertices;
 		std::unique_ptr<CUDA::DeviceMemory> memory;
 		std::unique_ptr<CUDA::DeviceMemory> materials_memory;
+		std::unique_ptr<CUDA::DeviceMemory> bvh_memory;
+		std::unique_ptr<CUDA::DeviceMemory> bvh_face_index_memory;
+		std::unique_ptr<CUDA::DeviceMemory> faces_memory;
+		std::unique_ptr<CUDA::DeviceMemory> vertices_memory;
 		std::unique_ptr<CUDA::Texture> environment_cubemap;
 		std::unique_ptr<BVH> bvh;
-		bool needs_upload = false;
+		DirtyFlags dirty_flags = ~0;
 	};
 
 }

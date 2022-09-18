@@ -34,15 +34,17 @@ namespace RayTracing
 		uint32_t v0;
 		uint32_t v2;
 		uint32_t v1;
-		uint32_t material;
+		uint32_t material = 0;
 	};
 
-	struct BVHNode
+	struct alignas(32) GPUBVHNode
 	{
 		AABB bounds;
-		uint32_t left_child = 0;
-		uint32_t first_prim = 0;
-		uint32_t prim_count = 0;
+		uint32_t first_index = 0; // if IsLeaf() it's index of the first primitive. Otherwise it's the index of the first child node.
+
+		// Number if triangles in the node. When non-zero it's a leaf node with no children.
+		// If 0 the node has 2 child nodes at indices (first_index) and (first_index+1)
+		uint32_t prim_count = 0; 
 
 		CUDA_HOST_DEVICE bool IsLeaf() const { return prim_count > 0; }
 	};
@@ -74,10 +76,13 @@ namespace RayTracing
 	struct GPUScene
 	{
 		const GeometrySphere* gpu_spheres = nullptr;
-		const GeometryTriangle* gpu_triangles = nullptr;
 		const GPUMaterial* gpu_materials = nullptr;
+		const GPUBVHNode* gpu_bvh_nodes = nullptr;
+		const uint32_t* gpu_bvh_face_indices = nullptr; // maps GPUBVHNode face indices to gpu_faces
+		const GPUVertex* gpu_vertices = nullptr;
+		const GPUFace* gpu_faces = nullptr;
+
 		int sphere_count = 0;
-		int triangle_count = 0;
 		int material_count = 0;
 		curandState* rng_state = nullptr;
 		cudaTextureObject_t environment_cubemap_tex = 0;
@@ -85,10 +90,8 @@ namespace RayTracing
 		GPUCamera camera;
 
 		CUDA_DEVICE int GetSphereCount() { return sphere_count; };
-		CUDA_DEVICE int GetTriangleCount() { return triangle_count; };
 		CUDA_DEVICE const GeometrySphere* GetSphereData(int index) { return gpu_spheres + index; };
-		CUDA_DEVICE const GeometryTriangle* GetTriangleData(int index) { return gpu_triangles + index; };
-		CUDA_DEVICE const GPUMaterial* GetMaterial(int index) { return gpu_materials + index; }
+		CUDA_DEVICE const GPUMaterial* GetMaterial(int index) const { return gpu_materials + index; }
 		CUDA_DEVICE RNG GetRNGForPixel(int screen_width, int x, int y) { return RNG(rng_state + y * screen_width + x); }
 	};
 
